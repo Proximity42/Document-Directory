@@ -5,8 +5,12 @@ namespace Document_Directory.Server.ModelsDB
     public class UserGroups
     {
         [Key]
-        public int id { get; set; }
-        public int userId {  get; set; }
-        public int groupId { get; set; }
+        public int Id { get; set; }
+        
+        //public int UserId {  get; set; }
+        //public int GroupId { get; set; }
+
+        public Groups Group { get; set; }
+        public Users User { get; set; }
     }
 }

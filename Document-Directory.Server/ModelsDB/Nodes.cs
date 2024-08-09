@@ -5,21 +5,20 @@ namespace Document_Directory.Server.ModelsDB
     public class Nodes
     {
         [Key]
-        public int id {  get; set; }
-        public string type { get; set; }
-        public string name { get; set; }
-        public string? content { get; set; }
-        public DateTime createdAt { get; set; }
-        public DateTime activityEnd { get; set; }
+        public int Id {  get; set; }
+        public string Type { get; set; }
+        public string Name { get; set; }
+        public string? Content { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime ActivityEnd { get; set; }
 
-        public Nodes(string type, string name, string content, DateTime createdAt, DateTime activityEnd)
+        public Nodes(string Type, string Name, string Content, DateTime CreatedAt, DateTime ActivityEnd)
         {
-            this.id = id;
-            this.type = type;
-            this.name = name;
-            this.content = content;
-            this.createdAt = createdAt;
-            this.activityEnd = activityEnd;
+            this.Type = Type;
+            this.Name = Name;
+            this.Content = Content;
+            this.CreatedAt = CreatedAt;
+            this.ActivityEnd = ActivityEnd;
         }
     }
 }

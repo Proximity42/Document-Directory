@@ -5,12 +5,12 @@ namespace Document_Directory.Server.ModelsDB
     public class Groups
     {
         [Key]
-        public int id { get; set; }
-        public string name { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
 
-        public Groups(string name)
+        public Groups(string Name)
         {
-            this.name = name;
+            this.Name = Name;
         }
     }
 }

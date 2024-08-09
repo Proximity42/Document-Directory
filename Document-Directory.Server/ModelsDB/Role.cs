@@ -5,12 +5,12 @@ namespace Document_Directory.Server.ModelsDB
     public class Role
     {
         [Key]
-        public int id { get; set; }
-        public string role { get; set; }
+        public int Id { get; set; }
+        public string UserRole { get; set; }
 
-        public Role(string role)
+        public Role(string UserRole)
         {
-            this.role = role;
+            this.UserRole = UserRole;
         }
     }
 }
