@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Reflection.Metadata;
 
 namespace Document_Directory.Server.ModelsDB
 {
@@ -15,7 +16,7 @@ namespace Document_Directory.Server.ModelsDB
 
         public AppDBContext(DbContextOptions<AppDBContext> options) : base (options)
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
 
         }
