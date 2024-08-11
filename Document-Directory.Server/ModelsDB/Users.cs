@@ -8,10 +8,11 @@ namespace Document_Directory.Server.ModelsDB
     {
         [Key]
         public int Id { get; set; }
-        public int RoleId { get; set; }
+        //public int RoleId { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
 
+        public Role role { get; set; }
         public Users(string Login, string Password)
         {
             this.Login = Login;
