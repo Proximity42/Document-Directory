@@ -2,6 +2,7 @@
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -51,10 +52,11 @@ namespace Document_Directory.Server.Controllers
         {
             var response = this.Response;
             var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
+            int idToDelete = NodeToDelete.Id;
             _dbContext.Nodes.Remove(NodeToDelete);
             _dbContext.SaveChanges();
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(_dbContext.Nodes);
+            await response.WriteAsJsonAsync(idToDelete);
         }
         [HttpGet]
         [Route("all")]
