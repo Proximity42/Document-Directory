@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Document_Directory.Server.ModelsDB
 {
@@ -7,8 +8,8 @@ namespace Document_Directory.Server.ModelsDB
         [Key]
         public int Id { get; set; }
         
-        //public int UserId {  get; set; }
-        //public int GroupId { get; set; }
+        public int UserId {  get; set; }
+        public int GroupId { get; set; }
 
         public Groups Group { get; set; }
         public Users User { get; set; }

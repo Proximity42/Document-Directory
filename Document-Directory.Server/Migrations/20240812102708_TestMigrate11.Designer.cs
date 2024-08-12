@@ -3,6 +3,7 @@ using System;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Document_Directory.Server.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240812102708_TestMigrate11")]
+    partial class TestMigrate11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,12 +179,10 @@ namespace Document_Directory.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("roleId")
+                    b.Property<int>("RoleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("roleId");
 
                     b.ToTable("Users");
                 });
@@ -249,17 +250,6 @@ namespace Document_Directory.Server.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Document_Directory.Server.ModelsDB.Users", b =>
-                {
-                    b.HasOne("Document_Directory.Server.ModelsDB.Role", "role")
-                        .WithMany()
-                        .HasForeignKey("roleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("role");
                 });
 #pragma warning restore 612, 618
         }

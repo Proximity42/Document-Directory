@@ -18,7 +18,6 @@ namespace Document_Directory.Server.ModelsDB
         {
             //Database.EnsureDeleted();
             Database.EnsureCreated();
-
         }
 
     }
