@@ -18,18 +18,27 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPost]
-        async public Task Create(Node node)
+        async public Task Create(Node node, int folderId)
         {
             Nodes nodes = new Nodes(node.Type, node.Name, node.Content, node.CreatedAt, node.ActivityEnd);
 
             _dbContext.Nodes.Add(nodes);
+
             _dbContext.SaveChanges();
+
+            int nodeId = nodes.Id;
+
+            if (folderId != 0)
+            {
+                NodeHierarchy hierarchy = new NodeHierarchy(folderId, nodeId);
+                _dbContext.NodeHierarchy.Add(hierarchy);
+                _dbContext.SaveChanges();
+            }
 
             var response = this.Response;
             response.StatusCode = 201;
             
             await response.WriteAsJsonAsync(nodes);
-
         }
 
         [HttpPatch]

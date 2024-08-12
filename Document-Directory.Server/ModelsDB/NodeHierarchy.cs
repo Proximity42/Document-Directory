@@ -13,5 +13,12 @@ namespace Document_Directory.Server.ModelsDB
 
         public Nodes Folder { get; set; }
         public Nodes Node { get; set; }
+
+        public NodeHierarchy(int FolderId, int NodeId) 
+        {
+            this.FolderId = FolderId;
+            this.NodeId = NodeId;
+        }
+
     }
 }

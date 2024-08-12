@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Document_Directory.Server.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20240812054807_M21")]
-    partial class M21
+    [Migration("20240812134908_test")]
+    partial class test
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,13 +50,13 @@ namespace Document_Directory.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("GroupId")
+                    b.Property<int>("GroupId")
                         .HasColumnType("integer");
 
                     b.Property<int>("NodeId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -193,7 +193,9 @@ namespace Document_Directory.Server.Migrations
                 {
                     b.HasOne("Document_Directory.Server.ModelsDB.Groups", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Document_Directory.Server.ModelsDB.Nodes", "Node")
                         .WithMany()
@@ -203,7 +205,9 @@ namespace Document_Directory.Server.Migrations
 
                     b.HasOne("Document_Directory.Server.ModelsDB.Users", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Group");
 

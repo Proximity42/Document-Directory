@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
+using Microsoft.EntityFrameworkCore;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -44,6 +45,28 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
             response.StatusCode=200;
             await response.WriteAsJsonAsync(groupToRename);
+        }
+
+        [HttpGet]
+        public async Task GetGroupParticipants(int groupId)
+        {
+            List<int> participantsId = new List<int>();
+            List<Users> users = new List<Users>();
+
+            foreach(UserGroups user in _dbContext.UserGroups)
+            {
+                participantsId.Add(user.UserId);
+            }
+
+            foreach(int userId in participantsId)
+            {
+                Users user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+                users.Add(user);
+            }
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(users);
         }
         /*[HttpGet]
         async public Task listParticipants(int id)

@@ -1,4 +1,5 @@
-﻿using Document_Directory.Server.ModelsDB;
+﻿using Document_Directory.Server.Models;
+using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -51,29 +52,5 @@ namespace Document_Directory.Server.Controllers
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(inNodes);
         }
-
-        /*[HttpPost]
-        public async Task<ActionResult<NodeHierarchy>> PostNodeHierarchy(NodeHierarchy nodeHierarchy)
-        {
-            _context.Set<NodeHierarchy>().Add(nodeHierarchy);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetNodeHierarchy", new { id = nodeHierarchy.Id }, nodeHierarchy);
-        }*/
-
-        /*[HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteNodeHierarchy(int id)
-        {
-            var nodeHierarchy = await _context.Set<NodeHierarchy>().FindAsync(id);
-            if (nodeHierarchy == null)
-            {
-                return NotFound();
-            }
-
-            _context.Set<NodeHierarchy>().Remove(nodeHierarchy);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }*/
     }
 }
