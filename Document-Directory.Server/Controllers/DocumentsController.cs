@@ -27,7 +27,7 @@ namespace Document_Directory.Server.Controllers
 
             var response = this.Response;
             response.StatusCode = 201;
-            int id = node.Id;
+            
             await response.WriteAsJsonAsync(nodes);
 
         }
@@ -63,6 +63,7 @@ namespace Document_Directory.Server.Controllers
         async public Task GetAll()
         {
             var response = this.Response;
+            response.StatusCode = 200;
             await response.WriteAsJsonAsync(_dbContext.Nodes);
         }
         [HttpGet("{id}")]
