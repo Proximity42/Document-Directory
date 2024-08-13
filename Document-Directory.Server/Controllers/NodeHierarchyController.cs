@@ -18,7 +18,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet]
-        public async Task GetNodeHierarchies()
+        public async Task GetNodeHierarchies() //Отображает внешние папки, т.е. папки и документы, которые не вложены в другие папки
         {
             List<int> nodesId = new List<int>();
 
@@ -35,7 +35,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task GetNodeHierarchy(int id)
+        public async Task GetNodeHierarchy(int id) //Принимает в качестве параметра id папки и отображает все вложенные в эту папку элементы
         {
             List<NodeHierarchy> exFolders = (from Folder in _context.NodeHierarchy where Folder.FolderId == id select Folder).ToList();
 

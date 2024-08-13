@@ -1,4 +1,5 @@
-﻿using Document_Directory.Server.Models;
+﻿using Document_Directory.Server.Function;
+using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +55,15 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
             response.StatusCode=200;
             await response.WriteAsJsonAsync(id);
+        }
+
+        [HttpGet("groupsuser")]
+        async public Task GetGroupsUser(int idUser)
+        {
+            List<Groups> groups = Functions.UserGroups(idUser, _dbContext); 
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(groups);
         }
 
         [HttpGet("all")]
