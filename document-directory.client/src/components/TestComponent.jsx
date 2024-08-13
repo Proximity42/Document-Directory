@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 
 function TestComponent() {
     return (
-        <a><NavLink to="/test">Переход</NavLink></a>
+        <a><NavLink to="/test"></NavLink></a>
     );
 }
 
