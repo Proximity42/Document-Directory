@@ -68,10 +68,38 @@ namespace Document_Directory.Server.Controllers
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(users);
         }
-        /*[HttpGet]
-        async public Task listParticipants(int id)
+
+        [HttpPost("composition")]
+        async public Task AddParticipants(int id, List<int> participants)
         {
-            Groups groups 
-        }*/
+            Groups group = _dbContext.Groups.FirstOrDefault(g => g.Id == id);
+            foreach (int participantId in participants)
+            {
+                UserGroups users = new UserGroups();
+                users.GroupId = id;
+                users.UserId = participantId;
+                _dbContext.UserGroups.Add(users);
+            }
+            _dbContext.SaveChanges();
+
+            var response = this.Response;
+            response.StatusCode = 201;
+            await response.WriteAsJsonAsync(group);
+        }
+        [HttpDelete("composition")]
+        async public Task DeleteParticipants(int id, List<int> participants)
+        {
+            Groups group = _dbContext.Groups.FirstOrDefault(g => g.Id == id);
+            foreach (int participantId in participants)
+            {
+                UserGroups users = _dbContext.UserGroups.FirstOrDefault(u => (u.GroupId == id && u.UserId == participantId));
+                _dbContext.UserGroups.Remove(users);
+            }
+            _dbContext.SaveChanges();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(group);
+        }
     }
 }
