@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Document_Directory.Server.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20240809122841_TestMigrate10")]
-    partial class TestMigrate10
+    [Migration("20240812134908_test")]
+    partial class test
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,13 +50,13 @@ namespace Document_Directory.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("GroupId")
+                    b.Property<int>("GroupId")
                         .HasColumnType("integer");
 
                     b.Property<int>("NodeId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -179,10 +179,12 @@ namespace Document_Directory.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int>("roleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("roleId");
 
                     b.ToTable("Users");
                 });
@@ -191,7 +193,9 @@ namespace Document_Directory.Server.Migrations
                 {
                     b.HasOne("Document_Directory.Server.ModelsDB.Groups", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Document_Directory.Server.ModelsDB.Nodes", "Node")
                         .WithMany()
@@ -201,7 +205,9 @@ namespace Document_Directory.Server.Migrations
 
                     b.HasOne("Document_Directory.Server.ModelsDB.Users", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Group");
 
@@ -246,6 +252,17 @@ namespace Document_Directory.Server.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Document_Directory.Server.ModelsDB.Users", b =>
+                {
+                    b.HasOne("Document_Directory.Server.ModelsDB.Role", "role")
+                        .WithMany()
+                        .HasForeignKey("roleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("role");
                 });
 #pragma warning restore 612, 618
         }
