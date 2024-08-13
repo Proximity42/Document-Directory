@@ -17,7 +17,7 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
         [HttpPost]
-        async public Task Create(Group group)
+        async public Task Create(Group group) //Создание группы
         {
             Groups groups = new Groups(group.Name);
             foreach (var item in group.Participants) 
@@ -34,7 +34,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(groups);
         }
         [HttpPatch]
-        async public Task Rename(int id, string newName)
+        async public Task Rename(int id, string newName) //Переименование группы по его Id
         {
             Groups groupToRename = _dbContext.Groups.FirstOrDefault(g => g.Id == id);
             groupToRename.Name = newName;
@@ -48,7 +48,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet]
-        public async Task GetGroupParticipants(int groupId)
+        public async Task GetGroupParticipants(int groupId) //Получение списка участников группы по его Id
         {
             List<int> participantsId = new List<int>();
             List<Users> users = new List<Users>();
@@ -70,7 +70,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPost("composition")]
-        async public Task AddParticipants(int id, List<int> participants)
+        async public Task AddParticipants(int id, List<int> participants) //Добавление удастника(-ов) в группу по его Id
         {
             Groups group = _dbContext.Groups.FirstOrDefault(g => g.Id == id);
             foreach (int participantId in participants)
@@ -87,7 +87,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(group);
         }
         [HttpDelete("composition")]
-        async public Task DeleteParticipants(int id, List<int> participants)
+        async public Task DeleteParticipants(int id, List<int> participants) //Удаление участника(-ов) группы по его Id
         {
             Groups group = _dbContext.Groups.FirstOrDefault(g => g.Id == id);
             foreach (int participantId in participants)

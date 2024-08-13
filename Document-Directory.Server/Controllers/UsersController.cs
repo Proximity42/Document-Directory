@@ -18,7 +18,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPost]
-        async public Task Create(User user)
+        async public Task Create(User user) //Создание пользователя
         {
             Users users = new Users(user.Login, user.Password);
             users.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
@@ -32,7 +32,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
         [HttpPatch]
-        async public Task Update(User user)
+        async public Task Update(User user) //Обновление информации о пользователе
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
             userToUpdate.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
@@ -46,7 +46,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpDelete]
-        async public Task Delete(int id)
+        async public Task Delete(int id) //Удаление пользователя
         {
             Users userToDelete = _dbContext.Users.FirstOrDefault(u => u.Id == id);
             _dbContext.Users.Remove(userToDelete);
@@ -58,7 +58,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet("groupsuser")]
-        async public Task GetGroupsUser(int idUser)
+        async public Task GetGroupsUser(int idUser) //Получение списка групп пользователя по его Id
         {
             List<Groups> groups = Functions.UserGroups(idUser, _dbContext); 
             var response = this.Response;
@@ -67,14 +67,14 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet("all")]
-        async public Task GetAll()
+        async public Task GetAll() //Получение списка всех пользователей 
         {
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(_dbContext.Users);
         }
         [HttpGet]
-        async public Task Get(int id)
+        async public Task Get(int id) //Получение информации пользователя по его идентификатору
         {
             Users currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == id);
             var response = this.Response;

@@ -42,7 +42,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPatch]
-        async public Task Update(Node node) 
+        async public Task Update(Node node) //Обновление информации о узле
         {
             var NodesToUpdate = _dbContext.Nodes.FirstOrDefault(x => x.Id == node.Id);
             NodesToUpdate.Name = node.Name;
@@ -57,7 +57,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(NodesToUpdate);
         }
         [HttpDelete]
-        async public Task Delete(int id)
+        async public Task Delete(int id) //Удаление узла по его Id
         {
             
             var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
@@ -71,7 +71,7 @@ namespace Document_Directory.Server.Controllers
         }
         [HttpGet]
         [Route("all")]
-        async public Task GetAll()
+        async public Task GetAll() //Получение списка всех существующих узлов
         {
             var response = this.Response;
             response.StatusCode = 200;
@@ -79,7 +79,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet("access")]
-        async public Task GetAccessAll(int idUser)
+        async public Task GetAccessAll(int idUser) //Получение списка всех доступных узлов пользователю по его Id
         {
             List<Groups> groupsUser = Functions.UserGroups(idUser, _dbContext);
             List<int> idGroups = new List<int>();
@@ -98,7 +98,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        async public Task Get(int? id)
+        async public Task Get(int? id) //Получение информации о узле по его Id
         {
             var response = this.Response;
             var node = _dbContext.Nodes.FirstOrDefault(n => n.Id == id);
