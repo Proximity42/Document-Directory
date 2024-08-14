@@ -14,7 +14,7 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
         [HttpGet]
-        async public Task Get(int id)
+        async public Task Get(int id) //Получение роли пользователя по его Id
         {
             Role role = _dbContext.Role.FirstOrDefault(x => x.Id == id);
             HttpResponse response = this.Response;

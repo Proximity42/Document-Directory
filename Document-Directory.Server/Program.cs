@@ -8,6 +8,8 @@ IConfiguration configuration = builder.Configuration;
 
 // Add services to the container.
 
+builder.Services.AddCors();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -18,6 +20,9 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 builder.Services.AddCors();
 
 var app = builder.Build();
+
+app.UseCors(builder => builder.AllowAnyOrigin());
+app.UseCors(builder => builder.AllowAnyHeader());
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

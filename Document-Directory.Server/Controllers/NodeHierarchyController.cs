@@ -1,8 +1,11 @@
-﻿using Document_Directory.Server.Models;
+﻿using Document_Directory.Server.Function;
+using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -18,39 +21,44 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpGet]
-        public async Task GetNodeHierarchies()
+        public async Task GetNodeHierarchies(int idUsers) //Отображает внешние папки, т.е. папки и документы, которые не вложены в другие папки
         {
-            List<int> nodesId = new List<int>();
+            (List<Groups> groupsUser, List<int> idGroups) = Functions.UserGroups(idUsers, _context);
+            List<Nodes> nodes = Functions.AllNodeAccess(idUsers, idGroups, _context);
 
+            List<int> nodesId = new List<int>();
             foreach (NodeHierarchy folder in _context.NodeHierarchy) 
             {
                 nodesId.Add(folder.NodeId);
             }
-
             List<Nodes> exFolders = (from Node in _context.Nodes where !nodesId.Contains(Node.Id) select Node).ToList();
+           
+            List<Nodes> exFoldersTemp = Functions.NodeAccessFolder(exFolders, nodes);
 
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(exFolders);
+            await response.WriteAsJsonAsync(exFoldersTemp);
         }
 
         [HttpGet("{id}")]
-        public async Task GetNodeHierarchy(int id)
+        public async Task GetNodeHierarchy(int idFolder, int idUser) //Принимает в качестве параметра id папки и отображает все вложенные в эту папку элементы
         {
-            List<NodeHierarchy> exFolders = (from Folder in _context.NodeHierarchy where Folder.FolderId == id select Folder).ToList();
+            (List<Groups> groupsUser, List<int> idGroups) = Functions.UserGroups(idUser, _context);
+            List<Nodes> nodes = Functions.AllNodeAccess(idUser, idGroups, _context);
 
+            List<NodeHierarchy> exFolder = (from Folder in _context.NodeHierarchy where Folder.FolderId == idFolder select Folder).ToList();
             List<Nodes> inNodes = new List<Nodes>();
-
-            foreach (NodeHierarchy folder in exFolders)
+            foreach (NodeHierarchy folder in exFolder)
             {
-                Nodes node;
-                node = _context.Nodes.FirstOrDefault(n => n.Id == folder.NodeId);
+                Nodes node = _context.Nodes.FirstOrDefault(n => n.Id == folder.NodeId); 
                 inNodes.Add(node);
             }
 
+            List<Nodes> inNodesTemp = Functions.NodeAccessFolder(inNodes, nodes);
+
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(inNodes);
+            await response.WriteAsJsonAsync(inNodesTemp);
         }
     }
 }
