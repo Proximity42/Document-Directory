@@ -6,6 +6,7 @@
         public string Name { get; set; }
         public string? Content { get; set; }
         public DateTime ActivityEnd { get; set; }
+        public int folderId { get; set; }
     }
 
     public class NodeToUpdate

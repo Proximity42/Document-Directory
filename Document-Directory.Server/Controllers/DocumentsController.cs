@@ -19,7 +19,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPost]
-        async public Task Create(NodeToCreate node, int folderId) //Создание документа и помещение его во вложенную папку по ее id
+        async public Task Create(NodeToCreate node) //Создание документа и помещение его во вложенную папку по ее id
         {
             Nodes nodes = new Nodes(node.Type, node.Name, node.Content, DateTime.Now, node.ActivityEnd);
 
@@ -27,9 +27,9 @@ namespace Document_Directory.Server.Controllers
             _dbContext.SaveChanges();
 
             int nodeId = nodes.Id;
-            if (folderId != 0)
+            if (node.folderId != 0)
             {
-                NodeHierarchy hierarchy = new NodeHierarchy(folderId, nodeId);
+                NodeHierarchy hierarchy = new NodeHierarchy(node.folderId, nodeId);
                 _dbContext.NodeHierarchy.Add(hierarchy);
                 _dbContext.SaveChanges();
             }
