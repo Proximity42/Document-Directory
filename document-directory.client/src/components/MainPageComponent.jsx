@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker } from 'antd';
-import axios from 'axios';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined } from '@ant-design/icons';
 const { Search } = Input;
 const { TextArea } = Input;
@@ -26,7 +25,7 @@ function MainPageComponent() {
                 name: name,
                 content: "",
                 activityEnd: "2024-08-14T04:50:29.980Z",
-                folderId: 3
+                folderId: 0
             })
             });
         if (response.status == 201)

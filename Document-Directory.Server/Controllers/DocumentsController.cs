@@ -21,7 +21,10 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task Create(NodeToCreate node) //Создание документа и помещение его во вложенную папку по ее id
         {
-            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, DateTime.Now, node.ActivityEnd);
+            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
+            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone, node.ActivityEnd);
+
+            
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
