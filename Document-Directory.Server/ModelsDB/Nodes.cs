@@ -12,10 +12,10 @@ namespace Document_Directory.Server.ModelsDB
         public string Type { get; set; }
         public string Name { get; set; }
         public string? Content { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime ActivityEnd { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset ActivityEnd { get; set; }
 
-        public Nodes(string Type, string Name, string Content, DateTime CreatedAt, DateTime ActivityEnd)
+        public Nodes(string Type, string Name, string Content, DateTimeOffset CreatedAt, DateTimeOffset ActivityEnd)
         {
             this.Type = Type;
             this.Name = Name;
