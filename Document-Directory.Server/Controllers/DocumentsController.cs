@@ -34,7 +34,6 @@ namespace Document_Directory.Server.Controllers
                 _dbContext.SaveChanges();
             }
 
-
             var response = this.Response;
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(nodes);
@@ -81,16 +80,8 @@ namespace Document_Directory.Server.Controllers
         [HttpGet("access")]
         async public Task GetAccessAll(int idUser) //Получение списка всех доступных узлов пользователю по его Id
         {
-            List<Groups> groupsUser = Functions.UserGroups(idUser, _dbContext);
-            List<int> idGroups = new List<int>();
-            foreach (var group in groupsUser) { idGroups.Add(group.Id); }
-            List<NodeAccess> nodeAccesses = (from Node in _dbContext.NodeAccess where idGroups.Contains(Node.GroupId) || (Node.UserId == idUser) select Node).ToList();
-            List<Nodes> nodes = new List<Nodes>();
-            foreach (var nodeAccess in nodeAccesses) 
-            {
-                Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId);
-                nodes.Add(node);
-            }
+            (List<Groups> groupsUser, List<int> idGroups) = Functions.UserGroups(idUser, _dbContext);
+            List<Nodes> nodes = Functions.AllNodeAccess(idUser, idGroups, _dbContext);
 
             var response = this.Response;
             response.StatusCode=200;

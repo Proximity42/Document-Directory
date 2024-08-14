@@ -60,7 +60,7 @@ namespace Document_Directory.Server.Controllers
         [HttpGet("groupsuser")]
         async public Task GetGroupsUser(int idUser) //Получение списка групп пользователя по его Id
         {
-            List<Groups> groups = Functions.UserGroups(idUser, _dbContext); 
+            List<Groups> groups = Functions.UserGroups(idUser, _dbContext).Item1; 
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(groups);
