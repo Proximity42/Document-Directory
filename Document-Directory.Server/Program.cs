@@ -21,9 +21,6 @@ builder.Services.AddCors();
 
 var app = builder.Build();
 
-app.UseCors(builder => builder.AllowAnyOrigin());
-app.UseCors(builder => builder.AllowAnyHeader());
-
 app.UseDefaultFiles();
 app.UseStaticFiles();
 

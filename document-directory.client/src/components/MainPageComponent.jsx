@@ -22,11 +22,9 @@ function MainPageComponent() {
             method: 'POST', 
             headers: new Headers({"Content-Type": "application/json"}), 
             body: JSON.stringify({
-                id: 0,
                 type: "Directory",
                 name: name,
                 content: "",
-                createdAt: "2024-08-14T04:50:29.980Z",
                 activityEnd: "2024-08-14T04:50:29.980Z",
                 folderId: 3
             })
