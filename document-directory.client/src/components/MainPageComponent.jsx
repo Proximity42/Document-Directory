@@ -1,11 +1,12 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker } from 'antd';
+import axios from 'axios';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined } from '@ant-design/icons';
 const { Search } = Input;
 const { TextArea } = Input;
 
 function MainPageComponent() {
-    const [availabledNodes, setAvailabledNodes] = useState([]);
+    const [availableNodes, setAvailableNodes] = useState([]);
     const [hierarchy, setHierarchy] = useState('/');
     const [isDirectoryCreateFormVisible, setIsDirectoryCreateFormVisible] = useState(false);
     const [isDocumentCreateFormVisible, setIsDocumentCreateFormVisible] = useState(false);
@@ -15,17 +16,33 @@ function MainPageComponent() {
 
     const onSearch = (value, _e, info) => console.log(info?.source, value);
     
-    function createDirectory() {
+    async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
-
-        setAvailabledNodes([...availabledNodes, {type: "Directory", name: name != "" ? name : "без названия"}]);
-        setIsDirectoryCreateFormVisible(false);
+        const response = await fetch('https://localhost:7018/api/documents', {
+            method: 'POST', 
+            headers: new Headers({"Content-Type": "application/json"}), 
+            body: JSON.stringify({
+                id: 0,
+                type: "Directory",
+                name: name,
+                content: "",
+                createdAt: "2024-08-14T04:50:29.980Z",
+                activityEnd: "2024-08-14T04:50:29.980Z",
+                folderId: 3
+            })
+            });
+        if (response.status == 201)
+        {
+            const json = await response.json();
+            setAvailableNodes([...availableNodes, json]);
+            setIsDirectoryCreateFormVisible(false);
+        }
     }
 
     function createDocument() {
         const name = document.querySelector('#inputDocumentName').value;
 
-        setAvailabledNodes([...availabledNodes, {type: "Document", name: name != "" ? name : "без названия"}]);
+        setAvailableNodes([...availableNodes, {type: "Document", name: name != "" ? name : "без названия"}]);
         setIsDocumentCreateFormVisible(false);
     }
 
@@ -33,9 +50,19 @@ function MainPageComponent() {
         console.log(date, dateString);
     }
 
-    function viewDirectoryContent(index) {
-        
+    async function viewDirectoryContent(directory) {
+        const response = await fetch(`api/NodeHierarchy/${directory.id}`);
+        console.log(response);
     }
+
+    async function getAvailableNodes() {
+        let response = await fetch("api/documents/all");
+        console.log(response.data);
+    }
+
+    useEffect(() => {
+        // getAvailableNodes();
+    }, [])
 
     return (
         <>
@@ -106,8 +133,8 @@ function MainPageComponent() {
             <p style={{textAlign: 'left', margin: '10px 0'}}>{hierarchy}</p>
             <div>
                 <Space wrap style={{gap: '15px'}}>
-                    {availabledNodes.map((node, index) => (
-                        <div key={index} className='availabledNode' style={{maxWidth: '120px'}}>
+                    {availableNodes.map((node, index) => (
+                        <div key={index} className='availableNode' style={{maxWidth: '120px'}}>
                             {node.type == "Directory" ? 
                             <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDocument(false); setChosenNode(node); setIsShowInfoChosenDirectory(true);}} onDoubleClick={() => viewDirectoryContent(node)}>
                                 <FolderFilled style={{fontSize: '50px'}} />

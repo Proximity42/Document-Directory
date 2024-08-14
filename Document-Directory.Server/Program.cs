@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDBContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -36,5 +36,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
+
+app.UseCors(builder => { builder.WithOrigins("https://localhost:5173"); builder.AllowAnyHeader(); });
 
 app.Run();
