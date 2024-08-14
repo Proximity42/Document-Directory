@@ -2,6 +2,7 @@
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace Document_Directory.Server.Function
@@ -34,6 +35,7 @@ namespace Document_Directory.Server.Function
             return nodes;
 
         }
+
         public static List<Nodes> NodeAccessFolder(List<Nodes> nodesInFolder, List<Nodes> allAccessNode) //Получение доступных узлов во вложенной папке
         {
             List<Nodes> inNodesTemp = new List<Nodes>(nodesInFolder);
@@ -43,6 +45,23 @@ namespace Document_Directory.Server.Function
                 else { inNodesTemp.Remove(node); }
             }
             return inNodesTemp;
+        }
+
+        public static Nodes FolderDocumentCheck(NodeToCreate node) //Проверка типа узла (папка/документ)
+        {
+            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
+            Nodes nodes;
+
+            if (node.Type == "Document")
+            {
+                nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone, node.ActivityEnd);
+            }
+            else
+            {
+                nodes = new Nodes(node.Type, node.Name, timestampWithTimezone);
+            }
+
+            return nodes;
         }
     }
 }

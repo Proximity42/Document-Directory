@@ -21,11 +21,11 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task Create(NodeToCreate node) //Создание документа и помещение его во вложенную папку по ее id
         {
-            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone, node.ActivityEnd);
-
             
+            var response = this.Response;
 
+            Nodes nodes = Functions.FolderDocumentCheck(node);
+            
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
 
@@ -36,11 +36,9 @@ namespace Document_Directory.Server.Controllers
                 _dbContext.NodeHierarchy.Add(hierarchy);
                 _dbContext.SaveChanges();
             }
-
-            var response = this.Response;
+            
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(nodes);
-
         }
 
         [HttpPatch]
@@ -61,7 +59,6 @@ namespace Document_Directory.Server.Controllers
         [HttpDelete]
         async public Task Delete(int id) //Удаление узла по его Id
         {
-            
             var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
             int idToDelete = NodeToDelete.Id;
             _dbContext.Nodes.Remove(NodeToDelete);

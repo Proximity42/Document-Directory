@@ -23,5 +23,12 @@ namespace Document_Directory.Server.ModelsDB
             this.CreatedAt = CreatedAt;
             this.ActivityEnd = ActivityEnd;
         }
+
+        public Nodes(string Type, string Name, DateTimeOffset CreatedAt) 
+        {
+            this.Type = Type;
+            this.Name = Name;
+            this.CreatedAt = CreatedAt;
+        }
     }
 }
