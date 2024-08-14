@@ -19,9 +19,9 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPost]
-        async public Task Create(Node node, int folderId) //Создание документа и помещение его во вложенную папку по ее id
+        async public Task Create(NodeToCreate node, int folderId) //Создание документа и помещение его во вложенную папку по ее id
         {
-            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, node.CreatedAt, node.ActivityEnd);
+            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, DateTime.Now, node.ActivityEnd);
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
@@ -41,7 +41,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPatch]
-        async public Task Update(Node node) //Обновление информации о узле
+        async public Task Update(NodeToUpdate node) //Обновление информации о узле
         {
             var NodesToUpdate = _dbContext.Nodes.FirstOrDefault(x => x.Id == node.Id);
             NodesToUpdate.Name = node.Name;

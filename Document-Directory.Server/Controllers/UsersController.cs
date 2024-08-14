@@ -18,7 +18,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPost]
-        async public Task Create(User user) //Создание пользователя
+        async public Task Create(UserToCreate user) //Создание пользователя
         {
             Users users = new Users(user.Login, user.Password);
             users.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
@@ -32,7 +32,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
         [HttpPatch]
-        async public Task Update(User user) //Обновление информации о пользователе
+        async public Task Update(UserToUpdate user) //Обновление информации о пользователе
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
             userToUpdate.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
