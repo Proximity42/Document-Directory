@@ -8,7 +8,7 @@ namespace Document_Directory.Server.Function
 {
     public static class Functions
     {
-        public static (List<Groups>, List<int>) UserGroups(int idUser, AppDBContext _dbContext)
+        public static (List<Groups>, List<int>) UserGroups(int idUser, AppDBContext _dbContext) //Получение списка групп, в которых состоит пользователь
         {
             List<UserGroups> usergroups = (from User in _dbContext.UserGroups where User.UserId == idUser select User).ToList();
             List<Groups> groups = new List<Groups>();
@@ -22,7 +22,7 @@ namespace Document_Directory.Server.Function
             return (groups, idGroups);
         }
 
-        public static List<Nodes> AllNodeAccess(int idUser, List<int> idGroups, AppDBContext _dbContext)
+        public static List<Nodes> AllNodeAccess(int idUser, List<int> idGroups, AppDBContext _dbContext) //Получение всех доступных узлов пользователю
         {
             List<NodeAccess> nodeAccesses = (from Node in _dbContext.NodeAccess where idGroups.Contains(Node.GroupId) || (Node.UserId == idUser) select Node).ToList();
             List<Nodes> nodes = new List<Nodes>();
@@ -34,7 +34,7 @@ namespace Document_Directory.Server.Function
             return nodes;
 
         }
-        public static List<Nodes> NodeAccessFolder(List<Nodes> nodesInFolder, List<Nodes> allAccessNode)
+        public static List<Nodes> NodeAccessFolder(List<Nodes> nodesInFolder, List<Nodes> allAccessNode) //Получение доступных узлов во вложенной папке
         {
             List<Nodes> inNodesTemp = new List<Nodes>(nodesInFolder);
             foreach (var node in nodesInFolder)
