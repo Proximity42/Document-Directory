@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Document_Directory.Server.Function
 {
@@ -105,6 +106,28 @@ namespace Document_Directory.Server.Function
 
             // если пользователя не найдено
             return null;
+        }
+
+        public static void DeleteFolderRecursively(int folderId, AppDBContext _dbContext) // Рекурсивное удаление папок и их содержимых 
+        {
+            var childNodes = _dbContext.NodeHierarchy.Where(x => x.FolderId == folderId).ToList();
+
+            foreach (var childNode in childNodes)
+            {
+                var node = _dbContext.Nodes.Find(childNode.NodeId);
+                if (node.Type == "Document")
+                {
+                    _dbContext.NodeHierarchy.Remove(childNode);
+                    _dbContext.Nodes.Remove(node);
+                }
+                else
+                {
+                    DeleteFolderRecursively(node.Id, _dbContext);
+                }
+            }
+
+            var folderToDelete = _dbContext.Nodes.Find(folderId);
+            _dbContext.Nodes.Remove(folderToDelete);
         }
 
         static public string GenerationHashPassword(string password)
