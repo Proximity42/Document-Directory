@@ -70,7 +70,9 @@ namespace Document_Directory.Server.Controllers
         {
             var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
             int idToDelete = NodeToDelete.Id;
-            _dbContext.Nodes.Remove(NodeToDelete);
+
+            Functions.DeleteFolderRecursively(id, _dbContext);
+
             _dbContext.SaveChanges();
 
             var response = this.Response;
