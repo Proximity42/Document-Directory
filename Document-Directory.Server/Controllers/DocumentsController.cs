@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Document_Directory.Server.Function;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Runtime.CompilerServices;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -18,12 +20,20 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
 
+        [Authorize]
         [HttpPost]
         async public Task Create(NodeToCreate node) //Создание документа и помещение его во вложенную папку по ее id
         {
-            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone, node.ActivityEnd);
+            
+            var response = this.Response;
 
+            Nodes nodes = Functions.FolderDocumentCheck(node);
+            
+            HttpContext context = this.HttpContext;
+            
+            string Id = context.User.Identity.Name;
+            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
+            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone);
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
@@ -35,11 +45,9 @@ namespace Document_Directory.Server.Controllers
                 _dbContext.NodeHierarchy.Add(hierarchy);
                 _dbContext.SaveChanges();
             }
-
-            var response = this.Response;
+            
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(nodes);
-
         }
 
         [HttpPatch]
@@ -61,7 +69,10 @@ namespace Document_Directory.Server.Controllers
         async public Task Delete(int id) //Удаление узла по его Id
         {
             var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
-            _dbContext.Nodes.Remove(NodeToDelete);
+            int idToDelete = NodeToDelete.Id;
+
+            Functions.DeleteFolderRecursively(id, _dbContext);
+
             _dbContext.SaveChanges();
 
             var response = this.Response;
@@ -82,10 +93,11 @@ namespace Document_Directory.Server.Controllers
         {
             (List<Groups> groupsUser, List<int> idGroups) = Functions.UserGroups(idUser, _dbContext);
             List<Nodes> nodes = Functions.AllNodeAccess(idUser, idGroups, _dbContext);
+            
 
             var response = this.Response;
             response.StatusCode=200;
-            await response.WriteAsJsonAsync(nodes);
+            await response.WriteAsJsonAsync(nodes.OrderBy(n=>n.Type));
         }
 
         [HttpGet("{id}")]

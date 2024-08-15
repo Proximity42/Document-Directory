@@ -1,8 +1,14 @@
-﻿using Document_Directory.Server.Models;
+﻿using Document_Directory.Server.Authorization;
+using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace Document_Directory.Server.Function
 {
@@ -34,6 +40,7 @@ namespace Document_Directory.Server.Function
             return nodes;
 
         }
+
         public static List<Nodes> NodeAccessFolder(List<Nodes> nodesInFolder, List<Nodes> allAccessNode) //Получение доступных узлов во вложенной папке
         {
             List<Nodes> inNodesTemp = new List<Nodes>(nodesInFolder);
@@ -43,6 +50,77 @@ namespace Document_Directory.Server.Function
                 else { inNodesTemp.Remove(node); }
             }
             return inNodesTemp;
+        }
+
+        public static Nodes FolderDocumentCheck(NodeToCreate node) //Проверка типа узла (папка/документ)
+        {
+            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
+            Nodes nodes;
+
+            if (node.Type == "Document")
+            {
+                nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone, node.ActivityEnd);
+            }
+            else
+            {
+                nodes = new Nodes(node.Type, node.Name, timestampWithTimezone);
+            }
+
+            return nodes;
+        }
+
+        //Генерация токена
+        public static (string, ClaimsIdentity) GenerationToken(UserToToken user, AppDBContext _dbContext)
+        {
+            var claimsIdentity = GetIdentity(user, _dbContext);
+            var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
+                    claims: claimsIdentity.Claims,
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(10)), // время действия 2 минуты
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+            return (new JwtSecurityTokenHandler().WriteToken(jwt), claimsIdentity);
+        }
+
+        static private ClaimsIdentity GetIdentity(UserToToken user, AppDBContext _dbContext)
+        {
+            Users users = _dbContext.Users.FirstOrDefault(x => x.Login == user.Login && x.Password == user.Password);
+            if (users != null)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, users.Login),
+                    new Claim("Id", users.Id.ToString()),
+                    //new Claim(ClaimsIdentity.DefaultRoleClaimType, _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
+                };
+                ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims);
+                return claimsIdentity;
+            }
+
+            // если пользователя не найдено
+            return null;
+        }
+
+        public static void DeleteFolderRecursively(int folderId, AppDBContext _dbContext) // Рекурсивное удаление папок и их содержимых 
+        {
+            var childNodes = _dbContext.NodeHierarchy.Where(x => x.FolderId == folderId).ToList();
+
+            foreach (var childNode in childNodes)
+            {
+                var node = _dbContext.Nodes.Find(childNode.NodeId);
+                if (node.Type == "Document")
+                {
+                    _dbContext.NodeHierarchy.Remove(childNode);
+                    _dbContext.Nodes.Remove(node);
+                }
+                else
+                {
+                    DeleteFolderRecursively(node.Id, _dbContext);
+                }
+            }
+
+            var folderToDelete = _dbContext.Nodes.Find(folderId);
+            _dbContext.Nodes.Remove(folderToDelete);
         }
     }
 }

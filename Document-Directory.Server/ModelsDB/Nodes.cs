@@ -13,15 +13,30 @@ namespace Document_Directory.Server.ModelsDB
         public string Name { get; set; }
         public string? Content { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
-        public DateTimeOffset ActivityEnd { get; set; }
+        public DateTimeOffset? ActivityEnd { get; set; }
 
-        public Nodes(string Type, string Name, string Content, DateTimeOffset CreatedAt, DateTimeOffset ActivityEnd)
+        public Nodes(string Type, string Name, string? Content, DateTimeOffset CreatedAt, DateTimeOffset? ActivityEnd)
         {
             this.Type = Type;
             this.Name = Name;
             this.Content = Content;
             this.CreatedAt = CreatedAt;
             this.ActivityEnd = ActivityEnd;
+        }
+        public Nodes(string Type, string Name, string? Content, DateTimeOffset CreatedAt)
+        {
+            this.Type = Type;
+            this.Name = Name;
+            this.Content = Content;
+            this.CreatedAt = CreatedAt;
+            this.ActivityEnd = ActivityEnd;
+        }
+
+        public Nodes(string Type, string Name, DateTimeOffset CreatedAt) 
+        {
+            this.Type = Type;
+            this.Name = Name;
+            this.CreatedAt = CreatedAt;
         }
     }
 }
