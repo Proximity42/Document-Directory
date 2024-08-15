@@ -33,7 +33,7 @@ namespace Document_Directory.Server.Controllers
             
             string Id = context.User.Identity.Name;
             DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone);
+            nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone);
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
