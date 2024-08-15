@@ -24,7 +24,6 @@ namespace Document_Directory.Server.Controllers
             DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
             Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone, node.ActivityEnd);
 
-            
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
@@ -58,18 +57,16 @@ namespace Document_Directory.Server.Controllers
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(NodesToUpdate);
         }
-        [HttpDelete]
+        [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление узла по его Id
         {
-            
             var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
-            int idToDelete = NodeToDelete.Id;
             _dbContext.Nodes.Remove(NodeToDelete);
             _dbContext.SaveChanges();
 
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(idToDelete);
+            await response.WriteAsJsonAsync(id);
         }
         [HttpGet]
         [Route("all")]
@@ -77,7 +74,7 @@ namespace Document_Directory.Server.Controllers
         {
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(_dbContext.Nodes);
+            await response.WriteAsJsonAsync(_dbContext.Nodes.OrderBy(n => n.Type));
         }
 
         [HttpGet("access")]

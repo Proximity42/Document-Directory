@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker } from 'antd';
-import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined } from '@ant-design/icons';
+import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled } from '@ant-design/icons';
+import dayjs from 'dayjs';
 const { Search } = Input;
 const { TextArea } = Input;
 
@@ -18,47 +19,94 @@ function MainPageComponent() {
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
         const response = await fetch('https://localhost:7018/api/documents', {
-            method: 'POST', 
+            method: 'POST',
             headers: new Headers({"Content-Type": "application/json"}), 
             body: JSON.stringify({
                 type: "Directory",
                 name: name,
-                content: "",
-                activityEnd: "2024-08-14T04:50:29.980Z",
                 folderId: 0
             })
-            });
+        });
         if (response.status == 201)
         {
             const json = await response.json();
-            setAvailableNodes([...availableNodes, json]);
+            const createdAt = dayjs(json.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY')
+            setAvailableNodes([...availableNodes, {...json, createdAt: createdAt}]);
             setIsDirectoryCreateFormVisible(false);
         }
     }
 
-    function createDocument() {
+    async function createDocument() {
         const name = document.querySelector('#inputDocumentName').value;
-
-        setAvailableNodes([...availableNodes, {type: "Document", name: name != "" ? name : "без названия"}]);
-        setIsDocumentCreateFormVisible(false);
+        let outputDate = document.querySelector('#inputDocumentActivityDate').value;
+        let activityDate = dayjs(outputDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
+        const content = document.querySelector('#inputDocumentContent').value;
+        const date = dayjs(activityDate).toJSON();
+        const response = await fetch('https://localhost:7018/api/documents', {
+            method: 'POST', 
+            headers: new Headers({"Content-Type": "application/json"}), 
+            body: JSON.stringify({
+                type: "Document",
+                name: name,
+                content: content,
+                activityEnd: date,
+                folderId: 0
+            })
+        });
+        if (response.status == 201)
+        {
+            const json = await response.json();
+            const activityEnd = dayjs(json.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY')
+            const createdAt = dayjs(json.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY')
+            setAvailableNodes([...availableNodes, {...json, activityEnd: activityEnd, createdAt: createdAt}]);
+            setIsDocumentCreateFormVisible(false);
+        }
     }
 
     function onChangeDateActivity(date, dateString) {
-        console.log(date, dateString);
+        // console.log(date, dateString);
+    }
+
+    async function deleteChosenNode() {
+        const response = await fetch(`https://localhost:7018/api/documents/${chosenNode.id}`, {
+            method: 'DELETE',
+            headers: new Headers({"Content-Type": "application/json"}),
+        });
+        if (response.status == 200)
+        {
+            setAvailableNodes(availableNodes.filter((node) => node.id != chosenNode.id));
+            setChosenNode({});
+            setIsShowInfoChosenDirectory(false);
+            setIsShowInfoChosenDocument(false);
+        }
     }
 
     async function viewDirectoryContent(directory) {
         const response = await fetch(`api/NodeHierarchy/${directory.id}`);
-        console.log(response);
     }
 
     async function getAvailableNodes() {
-        let response = await fetch("api/documents/all");
-        console.log(response.data);
+        const response = await fetch("https://localhost:7018/api/documents/all");
+        if (response.status == 200)
+        {
+            const json = await response.json();
+            json.map((node) => {
+                if (node.type == "Document")
+                {
+                    const activityEnd = dayjs(node.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    const createdAt = dayjs(node.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes(prevNodes => [...prevNodes, {...node, activityEnd: activityEnd, createdAt: createdAt}]);
+                }
+                else {
+                    const createdAt = dayjs(node.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes(prevNodes => [...prevNodes, {...node, createdAt: createdAt}]);
+                }
+            });
+        }
     }
 
     useEffect(() => {
-        // getAvailableNodes();
+        getAvailableNodes();
     }, [])
 
     return (
@@ -83,7 +131,7 @@ function MainPageComponent() {
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата окончания действия документа</p>
-                            <DatePicker onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft'/>
+                            <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft'/>
                         </div>
                         <TextArea
                             placeholder="Введите содержимое документа"
@@ -109,8 +157,8 @@ function MainPageComponent() {
                 />
             </div>
             <br />
-            <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                <div>
+            <div style={{display: 'flex', justifyContent: 'space-between', height: '60px'}}>
+                <div style={{display: 'flex', gap: '10px'}}>
                     <button onClick={() => setIsDirectoryCreateFormVisible(true)} className="btnWithIcon">
                         <FolderAddFilled style={{fontSize: '30px'}}/>
                         <p style={{textWrap: 'wrap', fontSize: '14px'}}>Создать папку</p>
@@ -119,12 +167,19 @@ function MainPageComponent() {
                         <FileAddFilled style={{fontSize: '30px'}}/>
                         <p style={{textWrap: 'wrap', fontSize: '14px'}}>Создать документ</p>
                     </button>
+                    <button onClick={() => deleteChosenNode()} className="btnWithIcon">
+                        <DeleteFilled style={{fontSize: '30px'}}/>
+                        <p style={{fontSize: '14px'}}>Удалить</p>
+                    </button>
                 </div>
-                {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div>
+                {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%'}}>
                     <p>Имя папки: {chosenNode.name}</p>
+                    <p>Дата создания: {chosenNode.createdAt}</p>
                 </div>}
-                {isShowInfoChosenDocument && !isShowInfoChosenDirectory && <div>
+                {isShowInfoChosenDocument && !isShowInfoChosenDirectory && <div style={{fontSize: '14px', maxSize: '40%'}}>
                     <p>Имя документа: {chosenNode.name}</p>
+                    <p>Дата создания: {chosenNode.createdAt}</p>
+                    <p>Дата активности: {chosenNode.activityEnd}</p>
                 </div>}
             </div>
             <p style={{textAlign: 'left', margin: '10px 0'}}>{hierarchy}</p>

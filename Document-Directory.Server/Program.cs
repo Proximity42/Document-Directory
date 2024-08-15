@@ -39,6 +39,6 @@ app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
 
-app.UseCors(builder => { builder.WithOrigins("https://localhost:5173"); builder.AllowAnyHeader(); });
+app.UseCors(builder => { builder.WithOrigins("https://localhost:5173").AllowAnyHeader().AllowAnyMethod(); });
 
 app.Run();

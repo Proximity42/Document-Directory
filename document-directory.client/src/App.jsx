@@ -7,9 +7,6 @@ import MainPageComponent from './components/MainPageComponent';
 
 function App() {
 
-    useEffect(() => {
-    }, []);
-
     return (
         <div>
             <BrowserRouter>
