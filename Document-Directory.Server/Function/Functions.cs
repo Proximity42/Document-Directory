@@ -8,6 +8,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Linq;
 
 namespace Document_Directory.Server.Function
@@ -70,20 +71,25 @@ namespace Document_Directory.Server.Function
         }
 
         //Генерация токена
-        public static (string, ClaimsIdentity) GenerationToken(UserToToken user, AppDBContext _dbContext)
+        public static string GenerationToken(UserToToken user, AppDBContext _dbContext)
         {
             var claimsIdentity = GetIdentity(user, _dbContext);
+            if (claimsIdentity == null)
+            {
+                return null;
+            }
             var jwt = new JwtSecurityToken(
                     issuer: AuthOptions.ISSUER,
                     audience: AuthOptions.AUDIENCE,
                     claims: claimsIdentity.Claims,
                     expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(10)), // время действия 2 минуты
                     signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-            return (new JwtSecurityTokenHandler().WriteToken(jwt), claimsIdentity);
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
         static private ClaimsIdentity GetIdentity(UserToToken user, AppDBContext _dbContext)
         {
+            string password = GenerationHashPassword(user.Password);
             Users users = _dbContext.Users.FirstOrDefault(x => x.Login == user.Login && x.Password == user.Password);
             if (users != null)
             {
@@ -91,6 +97,7 @@ namespace Document_Directory.Server.Function
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, users.Login),
                     new Claim("Id", users.Id.ToString()),
+                    new Claim("Role", _dbContext.Role.FirstOrDefault(r => r.Id == users.Id).UserRole)
                     //new Claim(ClaimsIdentity.DefaultRoleClaimType, _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
                 };
                 ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims);
@@ -122,5 +129,13 @@ namespace Document_Directory.Server.Function
             var folderToDelete = _dbContext.Nodes.Find(folderId);
             _dbContext.Nodes.Remove(folderToDelete);
         }
+
+        static public string GenerationHashPassword(string password)
+        {
+            byte[] messageBytes = Encoding.UTF8.GetBytes(password);
+            byte[] hashValue = SHA256.HashData(messageBytes);
+            return Convert.ToHexString(hashValue);
+        }
+
     }
 }

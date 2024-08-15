@@ -22,18 +22,23 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task GetToken(UserToToken user)
         {
-            (string Token, ClaimsIdentity identity) = Functions.GenerationToken(user, _dbContext);
+            string Token = Functions.GenerationToken(user, _dbContext);
             HttpResponse response = this.Response;
-            Token token = new Token();
-            token.token = Token;
-            token.identityName = identity.FindFirst("Id").Value;
-
-            await response.WriteAsJsonAsync(token);
+            if (response == null)
+            {
+                response.StatusCode = 401;
+                await response.WriteAsJsonAsync(user);
+            }
+            
+            int idUser = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            response.Headers.Append("Token", Token);
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(_dbContext.Users.FirstOrDefault(u => u.Id == idUser));
         }
     }
-    public record Token
+    /*public record Token
     {
         public string token { get; set; }
         public string identityName { get; set; }
-    }
+    }*/
 }

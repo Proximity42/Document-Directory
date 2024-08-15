@@ -20,7 +20,8 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task Create(UserToCreate user) //Создание пользователя
         {
-            Users users = new Users(user.Login, user.Password);
+            string password = Functions.GenerationHashPassword(user.Password);
+            Users users = new Users(user.Login, password);
             users.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
 
             _dbContext.Users.Add(users);
