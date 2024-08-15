@@ -6,6 +6,7 @@ using Document_Directory.Server.Function;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -29,11 +30,9 @@ namespace Document_Directory.Server.Controllers
 
             Nodes nodes = Functions.FolderDocumentCheck(node);
             
-            HttpContext context = this.HttpContext;
+            //HttpContext context = this.HttpContext;
             
-            string Id = context.User.Identity.Name;
-            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone);
+            //string Id = context.User.Identity.Name;
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
@@ -106,6 +105,91 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
             var node = _dbContext.Nodes.FirstOrDefault(n => n.Id == id);
             await response.WriteAsJsonAsync(node);
+        }
+
+        [HttpGet("filterByActivityDate")]
+        async public Task FilterByActivityDate(DateTimeOffset? startDate, DateTimeOffset? endDate, bool sortDescending = false) //Фильтрация документов по дате активности с сортировкой
+        {
+            var filteredNodes = _dbContext.Nodes.AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                var startDateUtc = startDate.Value.UtcDateTime;
+                filteredNodes = filteredNodes.Where(n => n.ActivityEnd >= startDateUtc);
+            }
+
+            if (endDate.HasValue)
+            {
+                var endDateUtc = endDate.Value.UtcDateTime;
+                filteredNodes = filteredNodes.Where(n => n.ActivityEnd <= endDateUtc);
+            }
+
+            filteredNodes = sortDescending 
+                            ? filteredNodes.OrderByDescending(n => n.ActivityEnd)
+                            : filteredNodes.OrderBy(n => n.ActivityEnd);
+
+            var result = filteredNodes.ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(result);
+        }
+
+        [HttpGet("filterByCreateDate")]
+        async public Task FilterByCreateDate(DateTimeOffset? startDate, DateTimeOffset? endDate, bool sortDescending = false) //Фильтрация узлов по дате создания с сортировкой
+        {
+            var filteredNodes = _dbContext.Nodes.AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                var startDateUtc = startDate.Value.UtcDateTime;
+                filteredNodes = filteredNodes.Where(n => n.CreatedAt >= startDateUtc);
+            }
+
+            if (endDate.HasValue)
+            {
+                var endDateUtc = endDate.Value.UtcDateTime;
+                filteredNodes = filteredNodes.Where(n => n.CreatedAt <= endDateUtc);
+            }
+
+            filteredNodes = sortDescending
+                            ? filteredNodes.OrderByDescending(n => n.CreatedAt)
+                            : filteredNodes.OrderBy(n => n.CreatedAt);
+
+            var result = filteredNodes.ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(result);
+        }
+
+        [HttpGet("searchByNodeName")]
+        async public Task SearchByNodeName(string? name, bool sortDescending = false) //Поиск узла по названию с сортировкой
+        {
+            var searchedNodes = _dbContext.Nodes.AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                if (name.StartsWith("\"") && name.EndsWith("\""))
+                {
+                    var exactName = name.Trim('\"');
+                    searchedNodes = searchedNodes.Where(n => n.Name == exactName);
+                }
+                else
+                {
+                    searchedNodes = searchedNodes.Where(n => n.Name.Contains(name));
+                }
+            }
+
+            searchedNodes = sortDescending
+                            ? searchedNodes.OrderByDescending(n => n.Name)
+                            : searchedNodes.OrderBy(n => n.Name);
+
+            var result = await searchedNodes.ToListAsync();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(result);
         }
     }
 }
