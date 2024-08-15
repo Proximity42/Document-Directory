@@ -43,7 +43,7 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^api': {
+            '^api/documents': {
                 target,
                 secure: false
             }
