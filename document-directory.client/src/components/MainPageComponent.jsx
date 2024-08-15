@@ -14,12 +14,12 @@ function MainPageComponent() {
     const [chosenNode, setChosenNode] = useState({})
 
     const onSearch = (value, _e, info) => console.log(info?.source, value);
-    
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUHJvc3RvIiwiSWQiOiIyIiwiZXhwIjoxNzIzNzEwNjEwLCJpc3MiOiJNeUF1dGhTZXJ2ZXIiLCJhdWQiOiJNeUF1dGhDbGllbnQifQ.QFYli_ldShOtf_zbdY3h9vq_zpEPTksiWQNR-F77njs"
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
-            headers: new Headers({"Content-Type": "application/json"}), 
+            headers: new Headers({ "Content-Type": "application/json", "Authorization": "Bearer " + token }), 
             body: JSON.stringify({
                 type: "Directory",
                 name: name,

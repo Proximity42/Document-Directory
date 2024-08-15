@@ -1,7 +1,12 @@
-﻿using Document_Directory.Server.Models;
+﻿using Document_Directory.Server.Authorization;
+using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 
 namespace Document_Directory.Server.Function
@@ -43,6 +48,38 @@ namespace Document_Directory.Server.Function
                 else { inNodesTemp.Remove(node); }
             }
             return inNodesTemp;
+        }
+
+        //Генерация токена
+        public static (string, ClaimsIdentity) GenerationToken(UserToToken user, AppDBContext _dbContext)
+        {
+            var claimsIdentity = GetIdentity(user, _dbContext);
+            var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
+                    claims: claimsIdentity.Claims,
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(10)), // время действия 2 минуты
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+            return (new JwtSecurityTokenHandler().WriteToken(jwt), claimsIdentity);
+        }
+
+        static private ClaimsIdentity GetIdentity(UserToToken user, AppDBContext _dbContext)
+        {
+            Users users = _dbContext.Users.FirstOrDefault(x => x.Login == user.Login && x.Password == user.Password);
+            if (users != null)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, users.Login),
+                    new Claim("Id", users.Id.ToString()),
+                    //new Claim(ClaimsIdentity.DefaultRoleClaimType, _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
+                };
+                ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims);
+                return claimsIdentity;
+            }
+
+            // если пользователя не найдено
+            return null;
         }
     }
 }
