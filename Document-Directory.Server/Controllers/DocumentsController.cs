@@ -20,7 +20,6 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
 
-        [Authorize]
         [HttpPost]
         async public Task Create(NodeToCreate node) //Создание документа и помещение его во вложенную папку по ее id
         {
@@ -28,12 +27,10 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
 
             Nodes nodes = Functions.FolderDocumentCheck(node);
-            
+
             HttpContext context = this.HttpContext;
-            
-            string Id = context.User.Identity.Name;
-            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes nodes = new Nodes(node.Type, node.Name, node.Content, timestampWithTimezone);
+
+            string Id = context.User.FindFirst("Role").Value;
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
@@ -69,13 +66,13 @@ namespace Document_Directory.Server.Controllers
         async public Task Delete(int id) //Удаление узла по его Id
         {
             var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
-            int idToDelete = NodeToDelete.Id;
+            
             _dbContext.Nodes.Remove(NodeToDelete);
             _dbContext.SaveChanges();
 
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(idToDelete);
+            await response.WriteAsJsonAsync(id);
         }
         [HttpGet]
         [Route("all")]

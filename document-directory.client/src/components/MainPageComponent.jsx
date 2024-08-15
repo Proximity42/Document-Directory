@@ -14,7 +14,7 @@ function MainPageComponent() {
     const [chosenNode, setChosenNode] = useState({})
 
     const onSearch = (value, _e, info) => console.log(info?.source, value);
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUHJvc3RvIiwiSWQiOiIyIiwiZXhwIjoxNzIzNzEwNjEwLCJpc3MiOiJNeUF1dGhTZXJ2ZXIiLCJhdWQiOiJNeUF1dGhDbGllbnQifQ.QFYli_ldShOtf_zbdY3h9vq_zpEPTksiWQNR-F77njs"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUHJvc3RvIiwiSWQiOiIyIiwiUm9sZSI6ItCf0L7Qu9GM0LfQvtCy0LDRgtC10LvRjCIsImV4cCI6MTcyMzcxMzkyNiwiaXNzIjoiTXlBdXRoU2VydmVyIiwiYXVkIjoiTXlBdXRoQ2xpZW50In0.uvby_Ca6c1kDIRdI7tCF2PzrfySr7laefVGkJkZYewU"
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
         const response = await fetch('https://localhost:7018/api/documents', {
