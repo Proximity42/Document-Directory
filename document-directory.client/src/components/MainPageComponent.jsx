@@ -12,6 +12,7 @@ function MainPageComponent() {
     const [isDocumentCreateFormVisible, setIsDocumentCreateFormVisible] = useState(false);
     const [isShowInfoChosenDirectory, setIsShowInfoChosenDirectory] = useState(false);
     const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
+    const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [chosenNode, setChosenNode] = useState({})
     const [authToken, setAuthToken] = useState("")
 
@@ -86,6 +87,7 @@ function MainPageComponent() {
     }
 
     async function getAvailableNodes() {
+        // const response = await fetch("https://localhost:7018/api/NodeHierarchy");
         const response = await fetch("https://localhost:7018/api/documents/all");
         if (response.status == 200)
         {
@@ -131,7 +133,7 @@ function MainPageComponent() {
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата окончания действия документа</p>
-                            <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft'/>
+                            <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft' minDate={dayjs()}/>
                         </div>
                         <TextArea
                             placeholder="Введите содержимое документа"
@@ -142,6 +144,28 @@ function MainPageComponent() {
                             id="inputDocumentContent"
                         />
                         <Button size='small' onClick={createDocument} style={{width: "100px"}}>Сохранить</Button>
+                    </div>
+                </div>
+            )}
+            {isDocumentViewModalVisible && (
+                <div className='modal'>
+                    <div className='modalContent'>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div>
+                                <h2 style={{margin: '0', textWrap: 'wrap', maxWidth: '100%'}}>{chosenNode.name}</h2>
+                            </div>
+                            <CloseOutlined onClick={() => setIsDocumentViewModalVisible(false)}/>
+                        </div>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                            <p>Дата создания документа</p>
+                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} style={{color: 'black'}}/>
+                        </div>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                            <p>Дата окончания действия документа</p>
+                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
+                            {/* <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft'/> */}
+                        </div>
+                        <TextArea disabled defaultValue={chosenNode.content} style={{textWrap: 'wrap', textAlign: 'left', opacity: '1', color: 'black', cursor: 'pointer'}} autoSize={{minRows: 6, maxRows: 10}}/>
                     </div>
                 </div>
             )}
@@ -204,7 +228,7 @@ function MainPageComponent() {
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p>
                             </button>
                             :
-                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDirectory(false); setChosenNode(node); setIsShowInfoChosenDocument(true);}}>
+                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDirectory(false); setChosenNode(node); setIsShowInfoChosenDocument(true);}} onDoubleClick={() => setIsDocumentViewModalVisible(true)}>
                                 <FileFilled style={{fontSize: '45px'}}/>
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p> 
                             </button>
