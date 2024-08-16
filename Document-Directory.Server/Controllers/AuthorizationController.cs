@@ -22,10 +22,10 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task GetToken(UserToToken user)
         {
-            string password = Functions.GenerationHashPassword(user.Password);
+            string password = HashFunctions.GenerationHashPassword(user.Password);
             Users users = _dbContext.Users.FirstOrDefault(x => x.Login == user.Login && x.Password == password);
 
-            string Token = Functions.GenerationToken(users, _dbContext);
+            string Token = AuthorizationFunctions.GenerationToken(users, _dbContext);
             HttpResponse response = this.Response;
             if (response == null)
             {
