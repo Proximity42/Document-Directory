@@ -66,11 +66,14 @@ namespace Document_Directory.Server.Controllers
         [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление узла по его Id
         {
-            var NodeToDelete = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
-            int idToDelete = NodeToDelete.Id;
-
-            Functions.DeleteFolderRecursively(id, _dbContext);
-
+            Nodes nodesToDelete = _dbContext.Nodes.FirstOrDefault(n => n.Id == id);
+            if (nodesToDelete.Type == "Document"){
+                _dbContext.Nodes.Remove(nodesToDelete);
+            }
+            else
+            {
+                Functions.DeleteFolderRecursively(id, _dbContext);
+            }
             _dbContext.SaveChanges();
 
             var response = this.Response;

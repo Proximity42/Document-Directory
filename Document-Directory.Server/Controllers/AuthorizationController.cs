@@ -22,7 +22,10 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task GetToken(UserToToken user)
         {
-            string Token = Functions.GenerationToken(user, _dbContext);
+            string password = Functions.GenerationHashPassword(user.Password);
+            Users users = _dbContext.Users.FirstOrDefault(x => x.Login == user.Login && x.Password == password);
+
+            string Token = Functions.GenerationToken(users, _dbContext);
             HttpResponse response = this.Response;
             if (response == null)
             {
@@ -30,8 +33,8 @@ namespace Document_Directory.Server.Controllers
                 await response.WriteAsJsonAsync(user);
             }
             
-            int idUser = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
-            response.Headers.Append("Token", Token);
+            int idUser = users.Id;
+            response.Headers.Append("Authorization", $"Bearer {Token}");
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(_dbContext.Users.FirstOrDefault(u => u.Id == idUser));
         }

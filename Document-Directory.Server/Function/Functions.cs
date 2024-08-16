@@ -71,7 +71,7 @@ namespace Document_Directory.Server.Function
         }
 
         //Генерация токена
-        public static string GenerationToken(UserToToken user, AppDBContext _dbContext)
+        public static string GenerationToken(Users user, AppDBContext _dbContext)
         {
             var claimsIdentity = GetIdentity(user, _dbContext);
             if (claimsIdentity == null)
@@ -87,17 +87,16 @@ namespace Document_Directory.Server.Function
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
-        static private ClaimsIdentity GetIdentity(UserToToken user, AppDBContext _dbContext)
+        static private ClaimsIdentity GetIdentity(Users users, AppDBContext _dbContext)
         {
-            string password = GenerationHashPassword(user.Password);
-            Users users = _dbContext.Users.FirstOrDefault(x => x.Login == user.Login && x.Password == user.Password);
+            
             if (users != null)
             {
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, users.Login),
                     new Claim("Id", users.Id.ToString()),
-                    new Claim("Role", _dbContext.Role.FirstOrDefault(r => r.Id == users.Id).UserRole)
+                    new Claim("Role", _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
                     //new Claim(ClaimsIdentity.DefaultRoleClaimType, _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
                 };
                 ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims);
