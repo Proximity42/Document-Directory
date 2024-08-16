@@ -12,15 +12,16 @@ function MainPageComponent() {
     const [isDocumentCreateFormVisible, setIsDocumentCreateFormVisible] = useState(false);
     const [isShowInfoChosenDirectory, setIsShowInfoChosenDirectory] = useState(false);
     const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
+    const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [chosenNode, setChosenNode] = useState({})
+    const [authToken, setAuthToken] = useState("")
 
     const onSearch = (value, _e, info) => console.log(info?.source, value);
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiUHJvc3RvIiwiSWQiOiIyIiwiUm9sZSI6ItCf0L7Qu9GM0LfQvtCy0LDRgtC10LvRjCIsImV4cCI6MTcyMzcxMzkyNiwiaXNzIjoiTXlBdXRoU2VydmVyIiwiYXVkIjoiTXlBdXRoQ2xpZW50In0.uvby_Ca6c1kDIRdI7tCF2PzrfySr7laefVGkJkZYewU"
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
-            headers: new Headers({ "Content-Type": "application/json", "Authorization": "Bearer " + token }), 
+            headers: new Headers({ "Content-Type": "application/json", "Authorization": "Bearer " + authToken }), 
             body: JSON.stringify({
                 type: "Directory",
                 name: name,
@@ -86,6 +87,7 @@ function MainPageComponent() {
     }
 
     async function getAvailableNodes() {
+        // const response = await fetch("https://localhost:7018/api/NodeHierarchy");
         const response = await fetch("https://localhost:7018/api/documents/all");
         if (response.status == 200)
         {
@@ -131,7 +133,7 @@ function MainPageComponent() {
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата окончания действия документа</p>
-                            <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft'/>
+                            <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft' minDate={dayjs()}/>
                         </div>
                         <TextArea
                             placeholder="Введите содержимое документа"
@@ -145,6 +147,28 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
+            {isDocumentViewModalVisible && (
+                <div className='modal'>
+                    <div className='modalContent'>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div>
+                                <h2 style={{margin: '0', textWrap: 'wrap', maxWidth: '100%'}}>{chosenNode.name}</h2>
+                            </div>
+                            <CloseOutlined onClick={() => setIsDocumentViewModalVisible(false)}/>
+                        </div>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                            <p>Дата создания документа</p>
+                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} style={{color: 'black'}}/>
+                        </div>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                            <p>Дата окончания действия документа</p>
+                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
+                            {/* <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft'/> */}
+                        </div>
+                        <TextArea disabled defaultValue={chosenNode.content} style={{textWrap: 'wrap', textAlign: 'left', opacity: '1', color: 'black', cursor: 'pointer'}} autoSize={{minRows: 6, maxRows: 10}}/>
+                    </div>
+                </div>
+            )}
             <div>
                 <Search
                     placeholder="Введите название документа или папки"
@@ -155,21 +179,32 @@ function MainPageComponent() {
                         width: '70%'
                     }}
                 />
+                <p style={{ margin: '10px 0 5px 0'}}>Укажите границы для фильтрации документов по дате активности</p>
+                <div style={{display: 'flex', justifyContent: 'space-evenly',}}>
+                    <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                        <p>Левая граница: </p>
+                        <DatePicker placeholder="Укажите дату"/>
+                    </div>
+                    <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                        <p>Правая граница:</p>
+                        <DatePicker placeholder="Укажите дату"/>
+                    </div>
+                </div>
             </div>
             <br />
-            <div style={{display: 'flex', justifyContent: 'space-between', height: '60px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 <div style={{display: 'flex', gap: '10px'}}>
                     <button onClick={() => setIsDirectoryCreateFormVisible(true)} className="btnWithIcon">
                         <FolderAddFilled style={{fontSize: '30px'}}/>
-                        <p style={{textWrap: 'wrap', fontSize: '14px'}}>Создать папку</p>
+                        <p style={{textWrap: 'wrap', fontSize: '14px', maxWidth: '120px'}}>Создать папку</p>
                     </button>
                     <button onClick={() => setIsDocumentCreateFormVisible(true)} className="btnWithIcon">
                         <FileAddFilled style={{fontSize: '30px'}}/>
-                        <p style={{textWrap: 'wrap', fontSize: '14px'}}>Создать документ</p>
+                        <p style={{textWrap: 'wrap', fontSize: '14px', maxWidth: '120px'}}>Создать документ</p>
                     </button>
                     <button onClick={() => deleteChosenNode()} className="btnWithIcon">
                         <DeleteFilled style={{fontSize: '30px'}}/>
-                        <p style={{fontSize: '14px'}}>Удалить</p>
+                        <p style={{textWrap: 'wrap', fontSize: '14px', maxWidth: '120px'}}>Удалить выбранный элемент</p>
                     </button>
                 </div>
                 {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%'}}>
@@ -182,7 +217,7 @@ function MainPageComponent() {
                     <p>Дата активности: {chosenNode.activityEnd}</p>
                 </div>}
             </div>
-            <p style={{textAlign: 'left', margin: '10px 0'}}>{hierarchy}</p>
+            <p style={{textAlign: 'left', margin: '8px 0', fontSize: '24px'}}>{hierarchy}</p>
             <div>
                 <Space wrap style={{gap: '15px'}}>
                     {availableNodes.map((node, index) => (
@@ -193,7 +228,7 @@ function MainPageComponent() {
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p>
                             </button>
                             :
-                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDirectory(false); setChosenNode(node); setIsShowInfoChosenDocument(true);}}>
+                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDirectory(false); setChosenNode(node); setIsShowInfoChosenDocument(true);}} onDoubleClick={() => setIsDocumentViewModalVisible(true)}>
                                 <FileFilled style={{fontSize: '45px'}}/>
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p> 
                             </button>
@@ -202,7 +237,6 @@ function MainPageComponent() {
                     ))}
                 </Space>
             </div>
-            
         </>
     );
 }

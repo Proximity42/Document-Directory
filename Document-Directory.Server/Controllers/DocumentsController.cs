@@ -31,7 +31,7 @@ namespace Document_Directory.Server.Controllers
 
             HttpContext context = this.HttpContext;
 
-            string Id = context.User.FindFirst("Role").Value;
+            //string Id = context.User.FindFirst("Role").Value;
 
             _dbContext.Nodes.Add(nodes);
             _dbContext.SaveChanges();
