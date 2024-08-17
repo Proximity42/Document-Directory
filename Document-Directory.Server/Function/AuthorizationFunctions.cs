@@ -34,7 +34,8 @@ namespace Document_Directory.Server.Function
                 {
                     new Claim(ClaimsIdentity.DefaultNameClaimType, users.Login),
                     new Claim("Id", users.Id.ToString()),
-                    new Claim("Role", _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
+                    new Claim("Role", _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole),
+                    new Claim(ClaimTypes.Role, _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
                     //new Claim(ClaimsIdentity.DefaultRoleClaimType, _dbContext.Role.FirstOrDefault(r => r.Id == users.roleId).UserRole)
                 };
                 ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims);

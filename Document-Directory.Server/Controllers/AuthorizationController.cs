@@ -27,16 +27,19 @@ namespace Document_Directory.Server.Controllers
 
             string Token = AuthorizationFunctions.GenerationToken(users, _dbContext);
             HttpResponse response = this.Response;
-            if (response == null)
+            if (users == null)
             {
                 response.StatusCode = 401;
-                await response.WriteAsJsonAsync(user);
+                await response.WriteAsJsonAsync("");
+            }
+            else
+            {
+                int idUser = users.Id;
+                response.Headers.Append("Authorization", $"Bearer {Token}");
+                response.StatusCode = 200;
+                await response.WriteAsJsonAsync(_dbContext.Users.FirstOrDefault(u => u.Id == idUser));
             }
             
-            int idUser = users.Id;
-            response.Headers.Append("Authorization", $"Bearer {Token}");
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(_dbContext.Users.FirstOrDefault(u => u.Id == idUser));
         }
     }
     /*public record Token

@@ -96,7 +96,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(currentUser);
         }
 
-        [Authorize]
+        /*[Authorize]
         [HttpGet]
         async public Task Get() //Получение информации пользователя по его идентификатору
         {
@@ -106,6 +106,6 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(currentUser);
-        }
+        }*/
     }
 }

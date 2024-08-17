@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Button } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled } from '@ant-design/icons';
 
 function Authorization() {
@@ -23,22 +24,26 @@ function Authorization() {
             setUser(json);
             navigate('/');
         }
+        else if (response.status == 401) {
+            document.getElementById('inputLogin').status = 'warning';
+            document.getElementById('inputLogin').placeholder = "error";
+            //#inputLogin.placeholder = 'Р’РІРµРґРёС‚Рµ РёРјСЏ';
+        }
     }
 
     return (
-        <>
-                Авторизация
+        <div style={{ margin: 'auto', marginTop: '15%' }}>
+            <p style={{ fontSize: '26px' }}>РђРІС‚РѕСЂРёР·Р°С†РёСЏ</p>    
             <div style={{margin: '10px'} }>
-                <Input placeholder="Введите логин" id="inputLogin" style={{ width: '50%' }} />
+                <Input status="error" size='large' placeholder="Р’РІРµРґРёС‚Рµ Р»РѕРіРёРЅ" id="inputLogin" prefix={<UserOutlined />} style={{ width: '25%', font: '16px' }} />
             </div>
             <div style={{ margin: '10px' }}>
-                <Input placeholder="Введите пароль" id="inputPassword" style={{ width: '50%' }} />
+                <Input size='large' placeholder="Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ" id="inputPassword" style={{ width: '25%' }} />
             </div>
             <div>
-                <Button size='small' onClick={authorization} style={{ width: "100px" }}>Сохранить</Button>
-            </div>
-            
-        </>
+                <Button type='primary' size='large' onClick={authorization} style={{ width: "130px" }}>РђРІС‚РѕСЂРёР·Р°С†РёСЏ</Button>
+            </div>            
+        </div>
     )
 }
 

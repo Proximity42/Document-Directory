@@ -17,5 +17,9 @@ namespace Document_Directory.Server.Function
 
             return (groups, idGroups);
         }
+        public static string GetRoleUser(int idRole, AppDBContext _dbContext) //Получение роли по ее Id
+        {
+            return (_dbContext.Role.Find(idRole).UserRole);
+        }
     }
 }

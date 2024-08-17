@@ -19,25 +19,18 @@ namespace Document_Directory.Server.Controllers
 
         [Authorize]
         [HttpPost]
-        async public Task Create(DocumentToCreate folder) //Создание папки и помещение ее во вложенную папку по ее id
+        async public Task Create(FolderToCreate folder) //Создание папки и помещение ее во вложенную папку по ее id
         {
             DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes folders;
+            Nodes folders = new Nodes("Folder", folder.Name, timestampWithTimezone); ;
 
-            var response = this.Response;
 
-            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
             /*var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
             string userLogin = user.Login;*/
 
             //Nodes folders = NodeFunctions.FolderDocumentCheck(folder, userId);
-
-            folders = new Nodes("Folder", folder.Name, timestampWithTimezone);
-
-            HttpContext context = this.HttpContext;
-
-            //string Id = context.User.FindFirst("Role").Value;
 
             _dbContext.Nodes.Add(folders);
             _dbContext.SaveChanges();
@@ -50,6 +43,7 @@ namespace Document_Directory.Server.Controllers
                 _dbContext.SaveChanges();
             }
 
+            var response = this.Response;
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(folders);
         }

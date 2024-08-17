@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -25,23 +26,10 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task Create(DocumentToCreate document) //Создание документа и помещение его во вложенную папку по ее id
         {
-            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes documents;
-
-            var response = this.Response;
-
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            /*var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-            string userLogin = user.Login;*/
-
-            //Nodes documents = NodeFunctions.FolderDocumentCheck(document, userId);
-
-            documents = new Nodes(userId, "Document", document.Name, document.Content, timestampWithTimezone, document.ActivityEnd);
-
-            HttpContext context = this.HttpContext;
-
-            //string Id = context.User.FindFirst("Role").Value;
+            DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
+            Nodes documents = new Nodes(userId, "Document", document.Name, document.Content, timestampWithTimezone, document.ActivityEnd); ; 
 
             _dbContext.Nodes.Add(documents);
             _dbContext.SaveChanges();
@@ -53,9 +41,32 @@ namespace Document_Directory.Server.Controllers
                 _dbContext.NodeHierarchy.Add(hierarchy);
                 _dbContext.SaveChanges();
             }
-            
+
+            var response = this.Response;
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(documents);
+        }
+
+        [Authorize]
+        [HttpGet("checkaccessedit")]
+        async public Task CheckAccessEdit(int id)
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value); ;
+            Nodes node = _dbContext.Nodes.Find(id);
+            Users user = _dbContext.Users.Find(userId);
+
+            var response = this.Response;
+            if (node.UserId == userId || UserFunctions.GetRoleUser(user.Id, _dbContext) == "Администратор")
+            {
+                response.StatusCode = 200;
+                await response.WriteAsJsonAsync(true);
+            }
+            else
+            {
+                response.StatusCode = 401;
+                await response.WriteAsJsonAsync(false);
+            }
+
         }
 
         [HttpPatch]
@@ -73,6 +84,7 @@ namespace Document_Directory.Server.Controllers
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(DocumentsToUpdate);
         }
+
         [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление узла по его Id
         {

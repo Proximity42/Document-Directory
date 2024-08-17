@@ -14,16 +14,15 @@ function MainPageComponent() {
     const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
     const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [chosenNode, setChosenNode] = useState({})
-    const [authToken, setAuthToken] = useState("")
+    
 
     const onSearch = (value, _e, info) => console.log(info?.source, value);
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
-            headers: new Headers({ "Content-Type": "application/json", "Authorization": "Bearer " + authToken }), 
+            headers: new Headers({ "Content-Type": "application/json" }), 
             body: JSON.stringify({
-                type: "Directory",
                 name: name,
                 folderId: 0
             })
