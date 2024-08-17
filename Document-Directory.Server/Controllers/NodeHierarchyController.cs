@@ -41,7 +41,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(exFoldersTemp);
         }
 
-        [HttpGet("internal/{idFolder}")]
+        [HttpGet("{idFolder}")]
         public async Task GetNodeHierarchy(int idFolder) //Принимает в качестве параметра id папки и отображает все вложенные в эту папку элементы
         {
             int idUser = 3;

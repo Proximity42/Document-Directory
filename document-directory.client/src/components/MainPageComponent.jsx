@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import { Input, Space, Button, DatePicker } from 'antd';
+import { Input, Space, Button, DatePicker, Radio, Table, Select } from 'antd';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 const { Search } = Input;
@@ -14,14 +14,18 @@ function MainPageComponent() {
     const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
     const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [chosenNode, setChosenNode] = useState({})
+    // const [isViewTable, setIsViewTable] = useState(false);
+    // const [isViewIcons, setIsViewIcons] = useState(false);
+    const [viewMethod, setViewMethod] = useState('table')
     const [authToken, setAuthToken] = useState("")
+    let documentFilterValue;
 
     const onSearch = (value, _e, info) => console.log(info?.source, value);
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
-            headers: new Headers({ "Content-Type": "application/json", "Authorization": "Bearer " + authToken }), 
+            headers: new Headers({"Content-Type": "application/json", "Authorization": "Bearer " + authToken}), 
             body: JSON.stringify({
                 type: "Directory",
                 name: name,
@@ -65,7 +69,6 @@ function MainPageComponent() {
     }
 
     function onChangeDateActivity(date, dateString) {
-        // console.log(date, dateString);
     }
 
     async function deleteChosenNode() {
@@ -106,6 +109,60 @@ function MainPageComponent() {
             });
         }
     }
+
+    async function documentsFilter()
+    {
+
+    }
+
+    const columns = [
+        {
+            title: 'Название',
+            dataIndex: 'name',
+            sorter: true,
+            // render: (node) => `${node.name}`,
+            width: '60%',
+        },
+        {
+            title: 'Тип',
+            dataIndex: 'type',
+            render: (type) => type == "Directory" ? "Директория" : "Документ",
+            filters: [
+                {
+                    text: 'Документ',
+                    value: 'Document',
+                },
+                {
+                    text: 'Директория',
+                    value: 'Directory',
+                },
+            ],
+            width: '10%',
+        },
+        {
+            title: 'Дата создания',
+            dataIndex: 'createdAt',
+            width: '14%'
+        },
+        {
+            title: 'Дата активности',
+            dataIndex: 'activityEnd',
+            width: '16%'
+        }
+    ];
+
+    // const onChangeViewMethod = (value) => {
+    //     if (value == "table")
+    //     {
+    //         setIsViewTable(true);
+    //         setIsViewIcons(false);
+            
+    //     }
+    //     else {
+    //         setIsViewIcons(true);
+    //         setIsViewTable(false);
+    //     }
+    // }
 
     useEffect(() => {
         getAvailableNodes();
@@ -163,9 +220,8 @@ function MainPageComponent() {
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата окончания действия документа</p>
                             <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
-                            {/* <DatePicker id="inputDocumentActivityDate" onChange={onChangeDateActivity} format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft'/> */}
                         </div>
-                        <TextArea disabled defaultValue={chosenNode.content} style={{textWrap: 'wrap', textAlign: 'left', opacity: '1', color: 'black', cursor: 'pointer'}} autoSize={{minRows: 6, maxRows: 10}}/>
+                        <TextArea disabled defaultValue={chosenNode.content} style={{textWrap: 'wrap', textAlign: 'left', opacity: '1', color: 'black', cursor: 'pointer'}} autoSize={{minRows: 18, maxRows: 20}}/>
                     </div>
                 </div>
             )}
@@ -179,15 +235,23 @@ function MainPageComponent() {
                         width: '70%'
                     }}
                 />
-                <p style={{ margin: '10px 0 5px 0'}}>Укажите границы для фильтрации документов по дате активности</p>
-                <div style={{display: 'flex', justifyContent: 'space-evenly',}}>
+                <div style={{display: 'flex', gap: '10px', marginTop: '15px'}}>
                     <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                        <p>Левая граница: </p>
-                        <DatePicker placeholder="Укажите дату"/>
+                        <p style={{ margin: '0', textAlign: 'left'}}>Фильтрация документов по дате</p>
+                        <Radio.Group onChange={documentsFilter} value={documentFilterValue} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                            <Radio value={1}>создания</Radio>
+                            <Radio value={2}>активности</Radio>
+                        </Radio.Group>
                     </div>
-                    <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                        <p>Правая граница:</p>
-                        <DatePicker placeholder="Укажите дату"/>
+                    <div style={{display: 'flex', gap: '20px'}}>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                            <p>с</p>
+                            <DatePicker placeholder="Укажите дату" style={{width: '130px'}}/>
+                        </div>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                            <p>до</p>
+                            <DatePicker placeholder="Укажите дату" style={{width: '130px'}}/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -218,7 +282,14 @@ function MainPageComponent() {
                 </div>}
             </div>
             <p style={{textAlign: 'left', margin: '8px 0', fontSize: '24px'}}>{hierarchy}</p>
-            <div>
+            <div style={{display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px'}}>
+                <p>Способ отображения</p>
+                <Select onChange={setViewMethod} style={{width: '100px'}} defaultValue={'table'} options={[
+                    { value: 'table', label: 'Таблица'},
+                    { value: 'icons', label: 'Значки'}
+                ]}/>
+            </div>
+            {viewMethod == 'icons' && <div>
                 <Space wrap style={{gap: '15px'}}>
                     {availableNodes.map((node, index) => (
                         <div key={index} className='availableNode' style={{maxWidth: '120px'}}>
@@ -236,7 +307,16 @@ function MainPageComponent() {
                         </div>
                     ))}
                 </Space>
-            </div>
+            </div>}
+            
+            {viewMethod == 'table' && <div>
+                <Table 
+                    columns={columns}
+                    rowKey={(record) => record.id}
+                    dataSource={availableNodes}
+                />
+            </div>}
+            
         </>
     );
 }
