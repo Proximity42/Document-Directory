@@ -115,7 +115,12 @@ namespace Document_Directory.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Nodes");
                 });
@@ -230,6 +235,17 @@ namespace Document_Directory.Server.Migrations
                     b.Navigation("Folder");
 
                     b.Navigation("Node");
+                });
+
+            modelBuilder.Entity("Document_Directory.Server.ModelsDB.Nodes", b =>
+                {
+                    b.HasOne("Document_Directory.Server.ModelsDB.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Document_Directory.Server.ModelsDB.UserGroups", b =>

@@ -1,6 +1,7 @@
 ﻿using Document_Directory.Server.Function;
 using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +21,7 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task Create(UserToCreate user) //Создание пользователя
         {
-            string password = Functions.GenerationHashPassword(user.Password);
+            string password = HashFunctions.GenerationHashPassword(user.Password);
             Users users = new Users(user.Login, password);
             users.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
 
@@ -61,7 +62,19 @@ namespace Document_Directory.Server.Controllers
         [HttpGet("groupsuser")]
         async public Task GetGroupsUser(int idUser) //Получение списка групп пользователя по его Id
         {
-            List<Groups> groups = Functions.UserGroups(idUser, _dbContext).Item1; 
+            List<Groups> groups = UserFunctions.UserGroups(idUser, _dbContext).Item1; 
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(groups);
+        }
+
+        [Authorize]
+        [HttpGet("groupsuserAuthorize")]
+        async public Task GetGroupsUser() //Получение списка групп пользователя по его Id
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+
+            List<Groups> groups = UserFunctions.UserGroups(userId, _dbContext).Item1;
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(groups);
@@ -83,6 +96,16 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(currentUser);
         }
 
+        [Authorize]
+        [HttpGet]
+        async public Task Get() //Получение информации пользователя по его идентификатору
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
+            Users currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(currentUser);
+        }
     }
 }
