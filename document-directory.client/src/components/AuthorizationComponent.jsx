@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input, Button } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
-import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled } from '@ant-design/icons';
+import { Input, Button, Form, message } from 'antd';
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
 function Authorization() {
     const [user, setUser] = useState({});
     const navigate = useNavigate();
 
+    const [messageApi, contextHolder] = message.useMessage();
+        
+    
     async function authorization() {
         const login = document.querySelector('#inputLogin').value;
         const password = document.querySelector('#inputPassword').value;
@@ -25,26 +28,50 @@ function Authorization() {
             navigate('/');
         }
         else if (response.status == 401) {
-            document.getElementById('inputLogin').status = 'warning';
-            document.getElementById('inputLogin').placeholder = "error";
-            //#inputLogin.placeholder = 'Введите имя';
+            
+            messageApi.open({
+                type: 'error',
+                content: 'Логин или пароль неправильный',
+            });
         }
     }
 
     return (
-        <div style={{ margin: 'auto', marginTop: '15%' }}>
-            <p style={{ fontSize: '26px' }}>Авторизация</p>    
-            <div style={{margin: '10px'} }>
-                <Input status="error" size='large' placeholder="Введите логин" id="inputLogin" prefix={<UserOutlined />} style={{ width: '25%', font: '16px' }} />
-            </div>
-            <div style={{ margin: '10px' }}>
-                <Input size='large' placeholder="Введите пароль" id="inputPassword" style={{ width: '25%' }} />
-            </div>
-            <div>
-                <Button type='primary' size='large' onClick={authorization} style={{ width: "130px" }}>Авторизация</Button>
-            </div>            
-        </div>
+        <>
+            {contextHolder }
+            <Form style={{ marginTop: '15%' }} name='auth' onFinish={authorization}>
+                <Form.Item
+                    name="login"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Введите логин',
+                        },
+
+                    ]}
+                >
+                    <Input size="large" style={{ width: '25%' }} prefix={<UserOutlined />} placeholder="Логин" id='inputLogin' />
+
+                </Form.Item>
+                <Form.Item
+                    name='password'
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Введите пароль',
+                        }
+                    ]}
+                >
+                    <Input.Password size="large" style={{ width: '25%' }} prefix={<LockOutlined />} placeholder="Пароль" id='inputPassword' iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)} />
+
+                </Form.Item>
+                <Form.Item>
+                    <Button type='primary' htmlType="submit">Авторизоваться</Button>
+                </Form.Item>
+            </Form>
+        </>
+        
+        
     )
 }
-
 export default Authorization;
