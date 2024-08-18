@@ -107,85 +107,41 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(folder);
         }
 
-        [HttpGet("filterByActivityDate")]
-        async public Task FilterByActivityDate(DateTimeOffset? startDate, DateTimeOffset? endDate, bool sortDescending = false) //Фильтрация документов по дате активности с сортировкой
+        [HttpGet("filterBy")]
+        async public Task FilterBy(DateTimeOffset? startDate, DateTimeOffset? endDate, string? name, string filterBy = "CreatedDate", string sortBy = "Name", bool sortDescending = false) //Фильтрация папок по дате создания или по имени с сортировкой
         {
-            var filteredNodes = _dbContext.Nodes.AsQueryable();
+            var filteredNodes = _dbContext.Nodes.Where(n => n.Type == "Folder").AsQueryable();
 
             if (startDate.HasValue)
             {
                 var startDateUtc = startDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.ActivityEnd >= startDateUtc && n.Type == "Folder");
+                filteredNodes = filteredNodes.Where(n => n.CreatedAt >= startDateUtc);
             }
 
             if (endDate.HasValue)
             {
                 var endDateUtc = endDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.ActivityEnd <= endDateUtc && n.Type == "Folder");
+                filteredNodes = filteredNodes.Where(n => n.CreatedAt <= endDateUtc);
             }
-
-            filteredNodes = sortDescending
-                            ? filteredNodes.OrderByDescending(n => n.ActivityEnd)
-                            : filteredNodes.OrderBy(n => n.ActivityEnd);
-
-            var result = filteredNodes.ToList();
-
-            var response = this.Response;
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(result);
-        }
-
-        [HttpGet("filterByCreateDate")]
-        async public Task FilterByCreateDate(DateTimeOffset? startDate, DateTimeOffset? endDate, bool sortDescending = false) //Фильтрация папок по дате создания с сортировкой
-        {
-            var filteredNodes = _dbContext.Nodes.AsQueryable();
-
-            if (startDate.HasValue)
-            {
-                var startDateUtc = startDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.CreatedAt >= startDateUtc && n.Type == "Folder");
-            }
-
-            if (endDate.HasValue)
-            {
-                var endDateUtc = endDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.CreatedAt <= endDateUtc && n.Type == "Folder");
-            }
-
-            filteredNodes = sortDescending
-                            ? filteredNodes.OrderByDescending(n => n.CreatedAt)
-                            : filteredNodes.OrderBy(n => n.CreatedAt);
-
-            var result = filteredNodes.ToList();
-
-            var response = this.Response;
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(result);
-        }
-
-        [HttpGet("searchByNodeName")]
-        async public Task SearchByNodeName(string? name, bool sortDescending = false) //Поиск папки по названию с сортировкой
-        {
-            var searchedNodes = _dbContext.Nodes.AsQueryable();
 
             if (!string.IsNullOrEmpty(name))
             {
+                var lowerName = name.ToLower();
+
                 if (name.StartsWith("\"") && name.EndsWith("\""))
                 {
-                    var exactName = name.Trim('\"');
-                    searchedNodes = searchedNodes.Where(n => n.Name == exactName && n.Type == "Folder");
+                    var exactName = lowerName.Trim('\"');
+                    filteredNodes = filteredNodes.Where(n => n.Name.ToLower() == exactName);
                 }
                 else
                 {
-                    searchedNodes = searchedNodes.Where(n => n.Name.Contains(name) && n.Type == "Folder");
+                    filteredNodes = filteredNodes.Where(n => n.Name.ToLower().Contains(lowerName));
                 }
             }
 
-            searchedNodes = sortDescending
-                            ? searchedNodes.OrderByDescending(n => n.Name)
-                            : searchedNodes.OrderBy(n => n.Name);
+            filteredNodes = NodeFunctions.SortBy(filteredNodes, sortBy, sortDescending);
 
-            var result = searchedNodes.ToList();
+            var result = filteredNodes.ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
