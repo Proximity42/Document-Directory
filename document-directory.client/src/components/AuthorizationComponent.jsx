@@ -31,44 +31,48 @@ function Authorization() {
             
             messageApi.open({
                 type: 'error',
-                content: 'Логин или пароль неправильный',
+                content: 'Логин или пароль введены неверно',
             });
         }
     }
 
     return (
         <>
-            {contextHolder }
-            <Form style={{ marginTop: '15%' }} name='auth' onFinish={authorization}>
-                <Form.Item
-                    name="login"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Введите логин',
-                        },
+            <div style={{ marginTop: '15%' }}>
+                <h3>Авторизация</h3>
+                {contextHolder }
+                <Form name='auth' onFinish={authorization}>
+                    <Form.Item
+                        name="login"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Введите логин',
+                            },
 
-                    ]}
-                >
-                    <Input size="large" style={{ width: '25%' }} prefix={<UserOutlined />} placeholder="Логин" id='inputLogin' />
+                        ]}
+                    >
+                        <Input size="large" style={{ width: '25%' }} prefix={<UserOutlined />} placeholder="Логин" id='inputLogin' />
 
-                </Form.Item>
-                <Form.Item
-                    name='password'
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Введите пароль',
-                        }
-                    ]}
-                >
-                    <Input.Password size="large" style={{ width: '25%' }} prefix={<LockOutlined />} placeholder="Пароль" id='inputPassword' iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)} />
+                    </Form.Item>
+                    <Form.Item
+                        name='password'
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Введите пароль',
+                            }
+                        ]}
+                    >
+                        <Input.Password size="large" style={{ width: '25%' }} prefix={<LockOutlined />} placeholder="Пароль" id='inputPassword' iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)} />
 
-                </Form.Item>
-                <Form.Item>
-                    <Button type='primary' htmlType="submit">Авторизоваться</Button>
-                </Form.Item>
-            </Form>
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type='primary' htmlType="submit">Авторизоваться</Button>
+                    </Form.Item>
+                </Form>
+            </div>
+        
         </>
         
         
