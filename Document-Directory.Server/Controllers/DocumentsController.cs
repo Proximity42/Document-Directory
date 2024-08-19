@@ -40,9 +40,11 @@ namespace Document_Directory.Server.Controllers
             {
                 NodeHierarchy hierarchy = new NodeHierarchy(document.folderId, nodeId);
                 _dbContext.NodeHierarchy.Add(hierarchy);
+                NodeAccess nodeAccess = new NodeAccess(nodeId, null, userId);
+                _dbContext.NodeAccess.Add(nodeAccess);
                 _dbContext.SaveChanges();
             }
-
+            
             var response = this.Response;
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(documents);
@@ -114,7 +116,7 @@ namespace Document_Directory.Server.Controllers
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            (List<Groups> groupsUser, List<int> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
             List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
             
 
@@ -131,11 +133,17 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(document);
         }
 
+        [Authorize]
         [HttpGet("filterBy")]
         async public Task FilterBy(DateTimeOffset? startDate, DateTimeOffset? endDate, string? name, string filterBy = "CreatedDate", string sortBy = "Name", bool sortDescending = false) //Фильтрация документов по дате активности, дате создания или по имени с сортировкой
         {
-            var filteredNodes = _dbContext.Nodes.Where(n => n.Type == "Document").AsQueryable();
-            
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
+            List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
+
+            var filteredNodes = documents.Where(n => n.Type == "Document").AsQueryable();
+
             if (startDate.HasValue)
             {
                 var startDateUtc = startDate.Value.UtcDateTime;

@@ -6,7 +6,7 @@ namespace Document_Directory.Server.Function
 {
     public class NodeFunctions
     {
-        public static List<Nodes> AllNodeAccess(int idUser, List<int> idGroups, AppDBContext _dbContext) //Получение всех доступных узлов пользователю
+        public static List<Nodes> AllNodeAccess(int? idUser, List<int?> idGroups, AppDBContext _dbContext) //Получение всех доступных узлов пользователю
         {
             List<NodeAccess> nodeAccesses = (from Node in _dbContext.NodeAccess where idGroups.Contains(Node.GroupId) || (Node.UserId == idUser) select Node).ToList();
             List<Nodes> nodes = new List<Nodes>();
@@ -15,6 +15,7 @@ namespace Document_Directory.Server.Function
                 Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId);
                 nodes.Add(node);
             }
+
             return nodes;
         }
 

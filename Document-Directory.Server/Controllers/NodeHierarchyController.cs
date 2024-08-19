@@ -27,7 +27,7 @@ namespace Document_Directory.Server.Controllers
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            (List<Groups> groupsUser, List<int> idGroups) = UserFunctions.UserGroups(userId, _context);
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _context);
             List<Nodes> nodes = NodeFunctions.AllNodeAccess(userId, idGroups, _context);
 
             List<int> nodesId = new List<int>();
@@ -50,7 +50,7 @@ namespace Document_Directory.Server.Controllers
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            (List<Groups> groupsUser, List<int> idGroups) = UserFunctions.UserGroups(userId, _context);
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _context);
             List<Nodes> nodes = NodeFunctions.AllNodeAccess(userId, idGroups, _context);
 
             List<NodeHierarchy> exFolder = (from Folder in _context.NodeHierarchy where Folder.FolderId == idFolder select Folder).ToList();

@@ -21,16 +21,10 @@ namespace Document_Directory.Server.Controllers
         [HttpPost]
         async public Task Create(FolderToCreate folder) //Создание папки и помещение ее во вложенную папку по ее id
         {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+
             DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
             Nodes folders = new Nodes("Folder", folder.Name, timestampWithTimezone); ;
-
-
-            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
-
-            /*var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-            string userLogin = user.Login;*/
-
-            //Nodes folders = NodeFunctions.FolderDocumentCheck(folder, userId);
 
             _dbContext.Nodes.Add(folders);
             _dbContext.SaveChanges();
@@ -40,6 +34,8 @@ namespace Document_Directory.Server.Controllers
             {
                 NodeHierarchy hierarchy = new NodeHierarchy(folder.folderId, nodeId);
                 _dbContext.NodeHierarchy.Add(hierarchy);
+                NodeAccess nodeAccess = new NodeAccess(nodeId, null, userId);
+                _dbContext.NodeAccess.Add(nodeAccess);
                 _dbContext.SaveChanges();
             }
 
@@ -90,7 +86,7 @@ namespace Document_Directory.Server.Controllers
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            (List<Groups> groupsUser, List<int> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
             List<Nodes> folders = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
 
 
@@ -106,11 +102,17 @@ namespace Document_Directory.Server.Controllers
             var folder = _dbContext.Nodes.Where(n => n.Type == "Folder").FirstOrDefault(n => n.Id == id);
             await response.WriteAsJsonAsync(folder);
         }
-
+        
+        [Authorize]        
         [HttpGet("filterBy")]
         async public Task FilterBy(DateTimeOffset? startDate, DateTimeOffset? endDate, string? name, string filterBy = "CreatedDate", string sortBy = "Name", bool sortDescending = false) //Фильтрация папок по дате создания или по имени с сортировкой
         {
-            var filteredNodes = _dbContext.Nodes.Where(n => n.Type == "Folder").AsQueryable();
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
+            List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
+
+            var filteredNodes = documents.Where(n => n.Type == "Folder").AsQueryable();
 
             if (startDate.HasValue)
             {

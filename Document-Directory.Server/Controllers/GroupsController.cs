@@ -86,6 +86,7 @@ namespace Document_Directory.Server.Controllers
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(group);
         }
+
         [HttpDelete("composition")]
         async public Task DeleteParticipants(int id, List<int> participants) //Удаление участника(-ов) группы по его Id
         {
