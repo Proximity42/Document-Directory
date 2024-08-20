@@ -34,7 +34,8 @@ namespace Document_Directory.Server.Controllers
 
             await response.WriteAsJsonAsync(users);
         }
-        [HttpPatch]
+
+        [HttpPatch("RoleChange")]
         async public Task ChangeRole(UserToChangeRole user) //Обновление информации о пользователе
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
@@ -44,8 +45,42 @@ namespace Document_Directory.Server.Controllers
             _dbContext.SaveChanges();
 
             var response = this.Response;
-            response.StatusCode =200;
+            response.StatusCode = 200;
             await response.WriteAsJsonAsync(userToUpdate);
+        }
+
+        [HttpPatch("PasswordChange")]
+        async public Task ChangePassword(UserToChangePassword user) //Изменение пароля
+        {
+            var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
+            string password = HashFunctions.GenerationHashPassword(user.Password);
+            
+            userToUpdate.Password = password;
+
+            _dbContext.Users.Update(userToUpdate);
+            _dbContext.SaveChanges();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(userToUpdate);
+        }
+
+        [Authorize]
+        [HttpPatch("PasswordChange")]
+        async public Task ChangePassword() //Изменение пароля
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            Users user = _dbContext.Users.Find(userId);
+            string password = HashFunctions.GenerationHashPassword(user.Password);
+
+            user.Password = password;
+
+            _dbContext.Users.Update(user);
+            _dbContext.SaveChanges();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(user);
         }
 
         [HttpDelete("{id}")]
