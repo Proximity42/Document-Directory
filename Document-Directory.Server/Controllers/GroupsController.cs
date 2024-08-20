@@ -102,5 +102,37 @@ namespace Document_Directory.Server.Controllers
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(group);
         }
+
+        [HttpPatch("UserGroup")]
+        async public Task Update(GroupToUpdate groupToUpdate)
+        {
+            var dbGroups = _dbContext.UserGroups.Where(n => n.GroupId == groupToUpdate.groupId).ToList();
+
+            foreach (var group in dbGroups)
+            {
+                if (!groupToUpdate.usersId.Contains(group.UserId))
+                {
+                    _dbContext.UserGroups.Remove(group);
+                }
+                else
+                {
+                    groupToUpdate.usersId.Remove(group.UserId);
+                }
+            }
+
+            foreach (var userId in groupToUpdate.usersId)
+            {
+                var newUserGroup = new UserGroups(groupToUpdate.groupId, userId);
+                _dbContext.UserGroups.Add(newUserGroup);
+            }
+
+            _dbContext.SaveChanges();
+
+            var updatedUserGroupList = _dbContext.UserGroups.Where(n => n.GroupId == groupToUpdate.groupId).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(updatedUserGroupList);
+        }
     }
 }

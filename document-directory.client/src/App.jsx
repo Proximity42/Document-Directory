@@ -4,6 +4,7 @@ import { BrowserRouter, NavLink} from 'react-router-dom';
 import './App.css';
 import MainPageComponent from './components/MainPageComponent';
 import AuthorizationComponent from './components/AuthorizationComponent';
+import PageAdminComponent from './components/PageAdminComponent';
 
 
 function App() {
@@ -21,8 +22,9 @@ function App() {
                     <div className="content">
                         <Routes>
                             <Route path="/" element={ <MainPageComponent /> } />
-                            <Route path="/login" element={ <AuthorizationComponent /> }/>
-                            {/*<Route path="/profile" element={ <ProfilePageComponent /> } />*/}
+                            <Route path="/login" element={ <AuthorizationComponent />} />
+                            <Route path="/admin" element={ <PageAdminComponent />} />
+                            
                         </Routes>
                     </div>
                 </main>

@@ -20,5 +20,12 @@ namespace Document_Directory.Server.Controllers
             HttpResponse response = this.Response;
             await response.WriteAsJsonAsync(role);
         }
+        [HttpGet("all")]
+        async public Task GetAll()
+        {
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(_dbContext.Role);
+        }
     }
 }

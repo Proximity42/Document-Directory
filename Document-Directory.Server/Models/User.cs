@@ -7,12 +7,18 @@
         public string Password { get; set; }
         
     }
-    public class UserToUpdate
+    public class UserToChangeRole
     {
         public int Id { get; set; }
         public int RoleId { get; set; }
-        public string Password { get; set; }
     }
+    public class UserToGet
+    {
+        public int Id { get; set; }
+        public string Role { get; set; }
+        public string Login { get; set; }
+    }
+
     public class UserToToken
     {
         public string Login { get; set; }

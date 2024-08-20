@@ -32,7 +32,7 @@ function MainPageComponent() {
         const name = document.querySelector('#inputDirectoryName').value;
         const response = await fetch('https://localhost:7018/api/folders', {
             method: 'POST', 
-            headers: new Headers({ "Content-Type": "application/json", 'Access-Control-Allow-Credentials': 'true'}),
+            headers: new Headers({ "Content-Type": "application/json" }), 
             credentials: 'include',
             body: JSON.stringify({
                 name: name,
@@ -56,7 +56,7 @@ function MainPageComponent() {
         const date = dayjs(activityDate).toJSON();
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
-            headers: new Headers({"Content-Type": "application/json", 'Access-Control-Allow-Credentials': 'true'}),
+            headers: new Headers({ "Content-Type": "application/json" }),
             credentials: 'include',
             body: JSON.stringify({
                 name: name,

@@ -1,5 +1,6 @@
 using Document_Directory.Server.Authorization;
 using Document_Directory.Server.ModelsDB;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 IConfiguration configuration = builder.Configuration;
 
 // Add services to the container.
+
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  // схема аутентификации - с помощью jwt-токенов
     .AddJwtBearer(options =>
@@ -27,12 +30,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  // с
             ValidAudience = AuthOptions.AUDIENCE,
             // будет ли валидироваться время существования
             ValidateLifetime = true,
-            // установка ключа безопасности
-            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
             // валидация ключа безопасности
             ValidateIssuerSigningKey = true,
+            // установка ключа безопасности
+            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+            
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["test"];
+
+                return Task.CompletedTask;
+            }
         };
     });
+
+/*builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options => options.LoginPath = "/login");*/
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
