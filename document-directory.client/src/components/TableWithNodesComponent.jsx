@@ -1,4 +1,4 @@
-
+import { Table } from 'antd';
 
 function TableWithNodesComponent({availableNodes}) {
 
