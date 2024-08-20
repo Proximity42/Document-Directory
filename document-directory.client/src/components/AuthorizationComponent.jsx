@@ -4,7 +4,7 @@ import { Input, Button, Form, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
-function Authorization() {
+function AuthorizationComponent() {
     const [user, setUser] = useState({});
     const navigate = useNavigate();
 
@@ -78,4 +78,4 @@ function Authorization() {
         
     )
 }
-export default Authorization;
+export default AuthorizationComponent;

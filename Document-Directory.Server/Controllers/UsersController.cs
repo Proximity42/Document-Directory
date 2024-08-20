@@ -4,6 +4,7 @@ using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -34,7 +35,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
         [HttpPatch]
-        async public Task Update(UserToUpdate user) //Обновление информации о пользователе
+        async public Task ChangeRole(UserToChangeRole user) //Обновление информации о пользователе
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
             userToUpdate.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
@@ -83,9 +84,13 @@ namespace Document_Directory.Server.Controllers
         [HttpGet("all")]
         async public Task GetAll() //Получение списка всех пользователей 
         {
+            var users = _dbContext.Users.Include(u => u.role).ToList();
+            List<UserToGet> userToGets = new List<UserToGet>();
+            
+
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(_dbContext.Users);
+            await response.WriteAsJsonAsync(users);
         }
         [HttpGet]
         async public Task Get(int id) //Получение информации пользователя по его идентификатору
