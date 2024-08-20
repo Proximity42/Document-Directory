@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'universal-cookie';
+//import Cookies from 'js-cookie';
 import { Input, Button, Form, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
+
 
 function AuthorizationComponent() {
     const [user, setUser] = useState({});
@@ -17,13 +20,25 @@ function AuthorizationComponent() {
         const response = await fetch('https://localhost:7018/api/authorization', {
             method: 'POST',
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
             body: JSON.stringify({
                 Login: login,
                 Password: password
             })
         });
         if (response.status == 200) {
+            /*// Если успешно авторизованы, получаем куки из ответа
+            const data = response.Headers['Authorization']
+
+            // Создаем экземпляр объекта cookies
+            const cookies = new Cookies();
+
+            // Устанавливаем куки с токеном или другой информацией об авторизации
+            cookies.set('authToken', data);*/
+            
             const json = await response.json();
+            
+            
             setUser(json);
             navigate('/');
         }

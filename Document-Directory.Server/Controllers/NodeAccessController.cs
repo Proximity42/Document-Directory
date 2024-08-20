@@ -31,7 +31,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(nodeAccess);
         }
 
-        [HttpPatch]
+        /*[HttpPatch]
         async public Task Update(int nodeId, List<int?> groupsId, List<int?> usersId)
         {
             var dbNodes = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId).ToList();
@@ -71,6 +71,6 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(updatedNodeAccessList);
-        }
+        }*/
     }
 }

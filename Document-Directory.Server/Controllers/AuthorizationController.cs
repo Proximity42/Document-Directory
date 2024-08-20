@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 
 namespace Document_Directory.Server.Controllers
@@ -34,8 +37,15 @@ namespace Document_Directory.Server.Controllers
             }
             else
             {
+                /*CookieContainer cookieContainer = new CookieContainer();
+
+                // установка кук
+                cookieContainer.SetCookies(new Uri("https://localhost:5173/"), "name=Bob");*/
+                
+                response.Cookies.Append("test", Token);
+
                 int idUser = users.Id;
-                response.Headers.Append("Authorization", $"Bearer {Token}");
+                //response.Headers.Append("Authorization", Token);
                 response.StatusCode = 200;
                 await response.WriteAsJsonAsync(_dbContext.Users.FirstOrDefault(u => u.Id == idUser));
             }

@@ -25,9 +25,10 @@ function MainPageComponent() {
     const onSearch = (value, _e, info) => console.log(info?.source, value);
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
-        const response = await fetch('https://localhost:7018/api/documents', {
+        const response = await fetch('https://localhost:7018/api/folders', {
             method: 'POST', 
             headers: new Headers({ "Content-Type": "application/json" }), 
+            credentials: 'include',
             body: JSON.stringify({
                 name: name,
                 folderId: 0
@@ -50,7 +51,8 @@ function MainPageComponent() {
         const date = dayjs(activityDate).toJSON();
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
-            headers: new Headers({"Content-Type": "application/json"}), 
+            headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
             body: JSON.stringify({
                 type: "Document",
                 name: name,
