@@ -13,5 +13,13 @@ namespace Document_Directory.Server.ModelsDB
 
         public Groups Group { get; set; }
         public Users User { get; set; }
+
+        public UserGroups() { }
+
+        public UserGroups(int GroupId, int UserId) 
+        {
+            this.GroupId = GroupId;
+            this.UserId = UserId;
+        }
     }
 }
