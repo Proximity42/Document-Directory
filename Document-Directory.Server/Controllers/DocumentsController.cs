@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using System.Linq;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -39,9 +40,11 @@ namespace Document_Directory.Server.Controllers
             {
                 NodeHierarchy hierarchy = new NodeHierarchy(document.folderId, nodeId);
                 _dbContext.NodeHierarchy.Add(hierarchy);
+                NodeAccess nodeAccess = new NodeAccess(nodeId, null, userId);
+                _dbContext.NodeAccess.Add(nodeAccess);
                 _dbContext.SaveChanges();
             }
-
+            
             var response = this.Response;
             response.StatusCode = 201;
             await response.WriteAsJsonAsync(documents);
@@ -130,91 +133,61 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(document);
         }
 
-        [HttpGet("filterByActivityDate")]
-        async public Task FilterByActivityDate(DateTimeOffset? startDate, DateTimeOffset? endDate, bool sortDescending = false) //Фильтрация документов по дате активности с сортировкой
+        [Authorize]
+        [HttpGet("filterBy")]
+        async public Task FilterBy(DateTimeOffset? startDate, DateTimeOffset? endDate, string? name, string filterBy = "CreatedDate", string sortBy = "Name", bool sortDescending = false) //Фильтрация документов по дате активности, дате создания или по имени с сортировкой
         {
-            var filteredNodes = _dbContext.Nodes.AsQueryable();
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
+            List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
+
+            var filteredNodes = documents.Where(n => n.Type == "Document").AsQueryable();
 
             if (startDate.HasValue)
             {
                 var startDateUtc = startDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.ActivityEnd >= startDateUtc && n.Type == "Document");
-                //filteredNodes = filteredNodes.Where(n => n.CreatedAt >= startDateUtc);
-            }
-
-            if (endDate.HasValue)
-            {
-                var endDateUtc = endDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.ActivityEnd <= endDateUtc && n.Type == "Document");
-                //filteredNodes = filteredNodes.Where(n => n.CreatedAt <= endDateUtc);
-            }
-
-            filteredNodes = sortDescending 
-                            ? filteredNodes.OrderByDescending(n => n.ActivityEnd)
-                            : filteredNodes.OrderBy(n => n.ActivityEnd);
-
-            //filteredNodes = sortDescending
-            //                ? filteredNodes.OrderByDescending(n => n.CreatedAt)
-            //                : filteredNodes.OrderBy(n => n.CreatedAt);
-
-            var result = filteredNodes.ToList();
-
-            var response = this.Response;
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(result);
-        }
-
-        [HttpGet("filterByCreateDate")]
-        async public Task FilterByCreateDate(DateTimeOffset? startDate, DateTimeOffset? endDate, bool sortDescending = false) //Фильтрация документов по дате создания с сортировкой
-        {
-            var filteredNodes = _dbContext.Nodes.AsQueryable();
-
-            if (startDate.HasValue)
-            {
-                var startDateUtc = startDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.CreatedAt >= startDateUtc && n.Type == "Document");
-            }
-
-            if (endDate.HasValue)
-            {
-                var endDateUtc = endDate.Value.UtcDateTime;
-                filteredNodes = filteredNodes.Where(n => n.CreatedAt <= endDateUtc && n.Type == "Document");
-            }
-
-            filteredNodes = sortDescending
-                            ? filteredNodes.OrderByDescending(n => n.CreatedAt)
-                            : filteredNodes.OrderBy(n => n.CreatedAt);
-
-            var result = filteredNodes.ToList();
-
-            var response = this.Response;
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(result);
-        }
-
-        [HttpGet("search")]
-        async public Task SearchByNodeName(string? name, bool sortDescending = false) //Поиск документа по названию с сортировкой
-        {
-            var searchedNodes = _dbContext.Nodes.AsQueryable();
-
-            if (!string.IsNullOrEmpty(name))
-            {
-                if (name.StartsWith("\"") && name.EndsWith("\""))
+                if (filterBy == "ActivityDate")
                 {
-                    var exactName = name.Trim('\"');
-                    searchedNodes = searchedNodes.Where(n => n.Name == exactName && n.Type == "Document");
+                    filteredNodes = filteredNodes.Where(n => n.ActivityEnd >= startDateUtc);
                 }
                 else
                 {
-                    searchedNodes = searchedNodes.Where(n => n.Name.Contains(name) && n.Type == "Document");
+                    filteredNodes = filteredNodes.Where(n => n.CreatedAt >= startDateUtc);
                 }
             }
 
-            searchedNodes = sortDescending
-                            ? searchedNodes.OrderByDescending(n => n.Name)
-                            : searchedNodes.OrderBy(n => n.Name);
+            if (endDate.HasValue)
+            {
+                var endDateUtc = endDate.Value.UtcDateTime;
+                if (filterBy == "ActivityDate")
+                {
+                    filteredNodes = filteredNodes.Where(n => n.ActivityEnd <= endDateUtc);
+                }
+                else
+                {
+                    filteredNodes = filteredNodes.Where(n => n.CreatedAt <= endDateUtc);
+                }
+            }
+            
+            if (!string.IsNullOrEmpty(name))
+            {
+                var lowerName = name.ToLower();
 
-            var result = searchedNodes.ToList();
+                if (name.StartsWith("\"") && name.EndsWith("\""))
+                {
+                    var exactName = lowerName.Trim('\"');
+                    filteredNodes = filteredNodes.Where(n => n.Name.ToLower() == exactName);
+                }
+                else
+                {
+                    filteredNodes = filteredNodes.Where(n => n.Name.ToLower().Contains(lowerName));
+                }
+            }
+
+            filteredNodes = NodeFunctions.SortBy(filteredNodes, sortBy, sortDescending);
+
+            var result = filteredNodes.ToList();
 
             var response = this.Response;
             response.StatusCode = 200;

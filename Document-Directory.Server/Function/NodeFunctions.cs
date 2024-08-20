@@ -1,11 +1,12 @@
 ﻿using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
+using Microsoft.EntityFrameworkCore;
 
 namespace Document_Directory.Server.Function
 {
     public class NodeFunctions
     {
-        public static List<Nodes> AllNodeAccess(int idUser, List<int?> idGroups, AppDBContext _dbContext) //Получение всех доступных узлов пользователю
+        public static List<Nodes> AllNodeAccess(int? idUser, List<int?> idGroups, AppDBContext _dbContext) //Получение всех доступных узлов пользователю
         {
             List<NodeAccess> nodeAccesses = (from Node in _dbContext.NodeAccess where idGroups.Contains(Node.GroupId) || (Node.UserId == idUser) select Node).ToList();
             List<Nodes> nodes = new List<Nodes>();
@@ -14,8 +15,8 @@ namespace Document_Directory.Server.Function
                 Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId);
                 nodes.Add(node);
             }
-            return nodes;
 
+            return nodes;
         }
 
         public static List<Nodes> NodeAccessFolder(List<Nodes> nodesInFolder, List<Nodes> allAccessNode) //Получение доступных узлов во вложенной папке
@@ -49,6 +50,29 @@ namespace Document_Directory.Server.Function
 
             var folderToDelete = _dbContext.Nodes.Find(folderId);
             _dbContext.Nodes.Remove(folderToDelete);
+        }
+
+        public static IQueryable<Nodes> SortBy(IQueryable<Nodes> sortedNodes, string sortBy = "Name", bool sortDescending = false) //Сортировка узлов
+        {
+            if (sortBy == "ActivityDate")
+            {
+                sortedNodes = sortDescending
+                        ? sortedNodes.OrderByDescending(n => n.ActivityEnd)
+                        : sortedNodes.OrderBy(n => n.ActivityEnd);
+            }
+            else if (sortBy == "CreatedDate")
+            {
+                sortedNodes = sortDescending
+                        ? sortedNodes.OrderByDescending(n => n.CreatedAt)
+                        : sortedNodes.OrderBy(n => n.CreatedAt);
+            }
+            else
+            {
+                sortedNodes = sortDescending
+                        ? sortedNodes.OrderByDescending(n => n.Name)
+                        : sortedNodes.OrderBy(n => n.Name);
+            }
+            return sortedNodes;
         }
     }
 }
