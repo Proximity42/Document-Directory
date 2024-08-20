@@ -1,4 +1,5 @@
-﻿using Document_Directory.Server.ModelsDB;
+﻿using Document_Directory.Server.Models;
+using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
@@ -31,46 +32,46 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(nodeAccess);
         }
 
-        /*[HttpPatch]
-        async public Task Update(int nodeId, List<int?> groupsId, List<int?> usersId)
+        [HttpPatch]
+        async public Task Update(AccessToUpdate accessToUpdate)
         {
-            var dbNodes = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId).ToList();
+            var dbNodes = _dbContext.NodeAccess.Where(n => n.NodeId == accessToUpdate.Id).ToList();
 
             foreach (var node in dbNodes)
             {
-                if (node.UserId.HasValue && !usersId.Contains(node.UserId.Value) || node.GroupId.HasValue && !groupsId.Contains(node.GroupId.Value))
+                if (node.UserId.HasValue && !accessToUpdate.usersId.Contains(node.UserId.Value) || node.GroupId.HasValue && !accessToUpdate.groupsId.Contains(node.GroupId.Value))
                 {
                     _dbContext.NodeAccess.Remove(node);
                 }
-                else if (node.UserId.HasValue && usersId.Contains(node.UserId.Value))
+                else if (node.UserId.HasValue && accessToUpdate.usersId.Contains(node.UserId.Value))
                 {
-                    usersId.Remove(node.UserId.Value);
+                    accessToUpdate.usersId.Remove(node.UserId.Value);
                 }
-                else if (node.GroupId.HasValue && groupsId.Contains(node.GroupId.Value))
+                else if (node.GroupId.HasValue && accessToUpdate.groupsId.Contains(node.GroupId.Value))
                 {
-                    groupsId.Remove(node.GroupId.Value);
+                    accessToUpdate.groupsId.Remove(node.GroupId.Value);
                 }
             }
 
-            foreach (var userId in usersId.Where(u => u.HasValue).Select(u => u.Value))
+            foreach (var userId in accessToUpdate.usersId.Where(u => u.HasValue).Select(u => u.Value))
             {
-                var newUserAccess = new NodeAccess(nodeId, null, userId);
+                var newUserAccess = new NodeAccess(accessToUpdate.Id, null, userId);
                 _dbContext.NodeAccess.Add(newUserAccess);
             }
 
-            foreach (var groupId in groupsId.Where(g => g.HasValue).Select(g => g.Value))
+            foreach (var groupId in accessToUpdate.groupsId.Where(g => g.HasValue).Select(g => g.Value))
             {
-                var newGroupAccess = new NodeAccess(nodeId, groupId, null);
+                var newGroupAccess = new NodeAccess(accessToUpdate.Id, groupId, null);
                 _dbContext.NodeAccess.Add(newGroupAccess);
             }
             
             _dbContext.SaveChanges();
 
-            var updatedNodeAccessList = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId).ToList();
+            var updatedNodeAccessList = _dbContext.NodeAccess.Where(n => n.NodeId == accessToUpdate.Id).ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(updatedNodeAccessList);
-        }*/
+        }
     }
 }
