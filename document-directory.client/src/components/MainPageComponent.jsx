@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover } from 'antd';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import TableWithNodesComponent from './TableWithNodesComponent';
 const { Search } = Input;
 const { TextArea } = Input;
 
@@ -186,42 +187,7 @@ function MainPageComponent() {
 
     }
 
-    const columns = [
-        {
-            title: 'Название',
-            dataIndex: 'name',
-            sorter: true,
-            // render: (node) => `${node.name}`,
-            width: '60%',
-        },
-        {
-            title: 'Тип',
-            dataIndex: 'type',
-            render: (type) => type == "Directory" ? "Директория" : "Документ",
-            filters: [
-                {
-                    text: 'Документ',
-                    value: 'Document',
-                },
-                {
-                    text: 'Директория',
-                    value: 'Directory',
-                },
-            ],
-            width: '10%',
-        },
-        {
-            title: 'Дата создания',
-            dataIndex: 'createdAt',
-            width: '14%'
-        },
-        {
-            title: 'Дата активности',
-            dataIndex: 'activityEnd',
-            width: '16%'
-        }
-    ];
-
+    
     // const onChangeViewMethod = (value) => {
     //     if (value == "table")
     //     {
@@ -386,14 +352,7 @@ function MainPageComponent() {
                     ))}
                 </Space>
             </div>}
-            {viewMethod == 'table' && <div>
-                <Table 
-                    columns={columns}
-                    rowKey={(record) => record.id}
-                    dataSource={availableNodes}
-                />
-            </div>}
-            
+            {viewMethod == 'table' && <TableWithNodesComponent availableNodes={availableNodes}/>}
         </>
     );
 }
