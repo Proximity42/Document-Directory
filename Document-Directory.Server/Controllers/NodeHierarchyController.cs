@@ -21,11 +21,12 @@ namespace Document_Directory.Server.Controllers
             _context = context;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         public async Task GetNodeHierarchies() //Отображает внешние папки, т.е. папки и документы, которые не вложены в другие папки
         {
-            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            int userId = 3;
+            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _context);
             List<Nodes> nodes = NodeFunctions.AllNodeAccess(userId, idGroups, _context);
@@ -44,11 +45,12 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(exFoldersTemp);
         }
 
-        [Authorize]
-        [HttpGet("internal/{idFolder}")]
+        //[Authorize]
+        [HttpGet("{idFolder}")]
         public async Task GetNodeHierarchy(int idFolder) //Принимает в качестве параметра id папки и отображает все вложенные в эту папку элементы
         {
-            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            int userId = 3;
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _context);
             List<Nodes> nodes = NodeFunctions.AllNodeAccess(userId, idGroups, _context);

@@ -17,14 +17,14 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost]
         async public Task Create(FolderToCreate folder) //Создание папки и помещение ее во вложенную папку по ее id
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
             DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes folders = new Nodes("Folder", folder.Name, timestampWithTimezone); ;
+            Nodes folders = new Nodes("Directory", folder.Name, timestampWithTimezone); ;
 
             _dbContext.Nodes.Add(folders);
             _dbContext.SaveChanges();
@@ -61,7 +61,7 @@ namespace Document_Directory.Server.Controllers
         [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление папки по его Id
         {
-            Nodes fodlersToDelete = _dbContext.Nodes.Where(n => n.Type == "Folder").FirstOrDefault(n => n.Id == id);
+            Nodes fodlersToDelete = _dbContext.Nodes.Where(n => n.Type == "Directory").FirstOrDefault(n => n.Id == id);
 
             NodeFunctions.DeleteFolderRecursively(id, _dbContext);
             _dbContext.SaveChanges();
@@ -77,7 +77,7 @@ namespace Document_Directory.Server.Controllers
         {
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(_dbContext.Nodes.OrderBy(n => n.Type).Where(n => n.Type == "Folder"));
+            await response.WriteAsJsonAsync(_dbContext.Nodes.OrderBy(n => n.Type).Where(n => n.Type == "Directory"));
         }
 
         [Authorize]
@@ -92,14 +92,14 @@ namespace Document_Directory.Server.Controllers
 
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(folders.OrderBy(n => n.Type).Where(n => n.Type == "Folder"));
+            await response.WriteAsJsonAsync(folders.OrderBy(n => n.Type).Where(n => n.Type == "Directory"));
         }
 
         [HttpGet("{id}")]
         async public Task Get(int? id) //Получение информации о папке по его Id
         {
             var response = this.Response;
-            var folder = _dbContext.Nodes.Where(n => n.Type == "Folder").FirstOrDefault(n => n.Id == id);
+            var folder = _dbContext.Nodes.Where(n => n.Type == "Directory").FirstOrDefault(n => n.Id == id);
             await response.WriteAsJsonAsync(folder);
         }
         
