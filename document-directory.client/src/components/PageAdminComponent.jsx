@@ -1,11 +1,28 @@
 import React, { Component } from 'react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { BrowserRouter, NavLink } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Divider, Menu, Switch } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+
 import ListUserComponent from './ListUserComponent';
 
+
 function PageAdminComponent() {
+    const [isShowListUser, setIsShowListUser] = useState(false);
+    const [roles, setRoles] = useState([]);
+
+    const handleChange = (item) => {
+
+        if (item.key === '1') {
+            setIsShowListUser(true);
+        }
+        else {
+            setIsShowListUser(false);
+        }
+    }
+
+    
 
     const menuItems = [
         {
@@ -24,17 +41,18 @@ function PageAdminComponent() {
             <h1>Управление</h1>
             <div style={{ display: 'flex' }}>
                 <div>
-                    <Menu
+                    <Menu id='menu'
                         style={{
                             width: 256,
                         }}
-                        defaultSelectedKeys={['2']}
-                        
+                        defaultSelectedKeys={['1']}
+                        onClick={handleChange}
                         items={menuItems}
                     />
                 </div>
                 <div>
-                    <ListUserComponent />
+                    {isShowListUser && <ListUserComponent /> }
+                      
                 </div>
             </div>
             

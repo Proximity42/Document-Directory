@@ -48,7 +48,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(userToUpdate);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление пользователя
         {
             Users userToDelete = _dbContext.Users.FirstOrDefault(u => u.Id == id);

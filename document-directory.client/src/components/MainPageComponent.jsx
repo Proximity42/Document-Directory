@@ -80,7 +80,7 @@ function MainPageComponent() {
     async function deleteChosenNode() {
         const response = await fetch(`https://localhost:7018/api/documents/${chosenNode.id}`, {
             method: 'DELETE',
-            headers: new Headers({"Content-Type": "application/json", 'Access-Control-Allow-Credentials': 'true'}),
+            headers: new Headers({"Content-Type": "application/json"}),
             credentials: 'include',
         });
         if (response.status == 200)

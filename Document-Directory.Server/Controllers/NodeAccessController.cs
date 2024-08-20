@@ -63,7 +63,7 @@ namespace Document_Directory.Server.Controllers
                 var newGroupAccess = new NodeAccess(nodeId, groupId, null);
                 _dbContext.NodeAccess.Add(newGroupAccess);
             }
-            
+
             _dbContext.SaveChanges();
 
             var updatedNodeAccessList = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId).ToList();
