@@ -19,7 +19,7 @@ namespace Document_Directory.Server.ModelsDB
         
         public Users? User { get; set; }
 
-        public Nodes(int UserId, string Type, string Name, string? Content, DateTimeOffset CreatedAt, DateTimeOffset? ActivityEnd)
+        public Nodes(int? UserId, string Type, string Name, string? Content, DateTimeOffset CreatedAt, DateTimeOffset? ActivityEnd)
         {
             this.UserId = UserId;
             this.Type = Type;

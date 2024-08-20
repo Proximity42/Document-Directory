@@ -113,7 +113,7 @@ namespace Document_Directory.Server.Controllers
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            (List<Groups> groupsUser, List<int> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
+            (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
             List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
             
 
@@ -192,7 +192,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(result);
         }
 
-        [HttpGet("searchByNodeName")]
+        [HttpGet("search")]
         async public Task SearchByNodeName(string? name, bool sortDescending = false) //Поиск документа по названию с сортировкой
         {
             var searchedNodes = _dbContext.Nodes.AsQueryable();

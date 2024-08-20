@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import { Input, Space, Button, DatePicker, Radio, Table, Select } from 'antd';
-import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled } from '@ant-design/icons';
+import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover } from 'antd';
+import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 const { Search } = Input;
 const { TextArea } = Input;
@@ -18,16 +18,21 @@ function MainPageComponent() {
     // const [isViewIcons, setIsViewIcons] = useState(false);
     const [viewMethod, setViewMethod] = useState('table')
     const [authToken, setAuthToken] = useState("")
+    const [directoryHierarchy, setDirectoryHierarchy] = useState([]);
     let documentFilterValue;
 
-    
+    async function searchDocumentByName(value, _e, info) {
+        const response = await fetch('https://localhost:7018/api/documents/search', {
+            
+        })
+    } 
 
-    const onSearch = (value, _e, info) => console.log(info?.source, value);
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
-        const response = await fetch('https://localhost:7018/api/documents', {
+        const response = await fetch('https://localhost:7018/api/folders', {
             method: 'POST', 
-            headers: new Headers({ "Content-Type": "application/json" }), 
+            headers: new Headers({ "Content-Type": "application/json", 'Access-Control-Allow-Credentials': 'true'}),
+            credentials: 'include',
             body: JSON.stringify({
                 name: name,
                 folderId: 0
@@ -50,9 +55,9 @@ function MainPageComponent() {
         const date = dayjs(activityDate).toJSON();
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
-            headers: new Headers({"Content-Type": "application/json"}), 
+            headers: new Headers({"Content-Type": "application/json", 'Access-Control-Allow-Credentials': 'true'}),
+            credentials: 'include',
             body: JSON.stringify({
-                type: "Document",
                 name: name,
                 content: content,
                 activityEnd: date,
@@ -75,7 +80,8 @@ function MainPageComponent() {
     async function deleteChosenNode() {
         const response = await fetch(`https://localhost:7018/api/documents/${chosenNode.id}`, {
             method: 'DELETE',
-            headers: new Headers({"Content-Type": "application/json"}),
+            headers: new Headers({"Content-Type": "application/json", 'Access-Control-Allow-Credentials': 'true'}),
+            credentials: 'include',
         });
         if (response.status == 200)
         {
@@ -87,12 +93,76 @@ function MainPageComponent() {
     }
 
     async function viewDirectoryContent(directory) {
-        const response = await fetch(`api/NodeHierarchy/${directory.id}`);
+        const response = await fetch(`https://localhost:7018/api/NodeHierarchy/${directory.id}`, {
+            credentials: 'include',
+            headers: new Headers({'Access-Control-Allow-Credentials': 'true'})
+        });
+        if (response.status == 200)
+        {
+            setAvailableNodes([]);
+            const json = await response.json();
+            json.map((node) => {
+                if (node.type == "Document")
+                {
+                    const activityEnd = dayjs(node.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    const createdAt = dayjs(node.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes(prevNodes => [...prevNodes, {...node, activityEnd: activityEnd, createdAt: createdAt}]);
+                }
+                else {
+                    const createdAt = dayjs(node.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes(prevNodes => [...prevNodes, {...node, createdAt: createdAt}]);
+                }
+            });
+            setIsShowInfoChosenDirectory(false);
+            setIsShowInfoChosenDocument(false); 
+        }
+        return response.status;
+    }
+
+    async function viewNextDirectoryContent() {
+        let status = await viewDirectoryContent(chosenNode);
+        if (status == 200) {
+            if (directoryHierarchy.length != 0) {
+                setHierarchy((hierarchy) => hierarchy + '/');
+            }
+            setHierarchy((hierarchy) => hierarchy + chosenNode.name);
+            setDirectoryHierarchy([...directoryHierarchy, chosenNode]);
+            setChosenNode({});
+        }
+    }
+
+    async function viewPrevDirectoryContent() {
+        if (directoryHierarchy.length != 0)
+        {
+            let prevDirectory = directoryHierarchy.flat().slice(directoryHierarchy.length - 1)[0];
+            const indexPrevDirectory = hierarchy.lastIndexOf(prevDirectory.name);
+            setAvailableNodes([]);
+            if (directoryHierarchy.length > 1)
+            {
+                let status = await viewDirectoryContent(prevDirectory);
+                if (status == 200) {
+                    setHierarchy((prevHierarchy) => prevHierarchy.substring(0, indexPrevDirectory));
+                    setHierarchy((prevHierarchy) => prevHierarchy.substring(0, prevHierarchy.lastIndexOf('/')));
+                    setDirectoryHierarchy(directoryHierarchy.filter((directory) => directory != prevDirectory));
+                    setChosenNode({});
+                }
+            } else {
+                await getAvailableNodes();
+                setHierarchy((prevHierarchy) => prevHierarchy.substring(0, indexPrevDirectory));
+                setDirectoryHierarchy([]);
+                setChosenNode({});
+            }
+            setIsShowInfoChosenDirectory(false);
+            setIsShowInfoChosenDocument(false);
+        }
+        
     }
 
     async function getAvailableNodes() {
-        // const response = await fetch("https://localhost:7018/api/NodeHierarchy");
-        const response = await fetch("https://localhost:7018/api/documents/all");
+        const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
+            credentials: 'include',
+            headers: new Headers({'Access-Control-Allow-Credentials': 'true'})
+        });
         if (response.status == 200)
         {
             const json = await response.json();
@@ -228,9 +298,9 @@ function MainPageComponent() {
             )}
             <div>
                 <Search
-                    placeholder="Введите название документа или папки"
+                    placeholder="Введите название документа"
                     allowClear
-                    onSearch={onSearch}
+                    onSearch={searchDocumentByName}
                     style={{
                         maxWidth: '700px',
                         width: '70%'
@@ -239,7 +309,7 @@ function MainPageComponent() {
                 <div style={{display: 'flex', gap: '10px', marginTop: '15px'}}>
                     <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                         <p style={{ margin: '0', textAlign: 'left'}}>Фильтрация документов по дате</p>
-                        <Radio.Group onChange={documentsFilter} value={documentFilterValue} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                        <Radio.Group onChange={documentsFilter} value={documentFilterValue} style={{display: 'flex'}}>
                             <Radio value={1}>создания</Radio>
                             <Radio value={2}>активности</Radio>
                         </Radio.Group>
@@ -256,21 +326,23 @@ function MainPageComponent() {
                     </div>
                 </div>
             </div>
-            <br />
-            <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                <div style={{display: 'flex', gap: '10px'}}>
-                    <button onClick={() => setIsDirectoryCreateFormVisible(true)} className="btnWithIcon">
-                        <FolderAddFilled style={{fontSize: '30px'}}/>
-                        <p style={{textWrap: 'wrap', fontSize: '14px', maxWidth: '120px'}}>Создать папку</p>
-                    </button>
-                    <button onClick={() => setIsDocumentCreateFormVisible(true)} className="btnWithIcon">
-                        <FileAddFilled style={{fontSize: '30px'}}/>
-                        <p style={{textWrap: 'wrap', fontSize: '14px', maxWidth: '120px'}}>Создать документ</p>
-                    </button>
-                    <button onClick={() => deleteChosenNode()} className="btnWithIcon">
-                        <DeleteFilled style={{fontSize: '30px'}}/>
-                        <p style={{textWrap: 'wrap', fontSize: '14px', maxWidth: '120px'}}>Удалить выбранный элемент</p>
-                    </button>
+            <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '5px'}}>
+                <div style={{display: 'flex', gap: '15px'}}>
+                    <Popover content={<p style={{fontSize: '14px'}}>Создать папку</p>}>
+                        <button onClick={() => setIsDirectoryCreateFormVisible(true)} className="btnWithIcon">
+                            <FolderAddFilled style={{fontSize: '30px'}}/>
+                        </button>
+                    </Popover>
+                    <Popover content={<p style={{fontSize: '14px'}}>Создать документ</p>}>
+                        <button onClick={() => setIsDocumentCreateFormVisible(true)} className="btnWithIcon">
+                            <FileAddFilled style={{fontSize: '30px'}}/>
+                        </button>
+                    </Popover>
+                    <Popover content={<p style={{fontSize: '14px'}}>Удалить выбранный элемент</p>}>
+                        <button onClick={() => deleteChosenNode()} className="btnWithIcon">
+                            <DeleteFilled style={{fontSize: '30px'}}/>
+                        </button>
+                    </Popover>
                 </div>
                 {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%'}}>
                     <p>Имя папки: {chosenNode.name}</p>
@@ -282,7 +354,12 @@ function MainPageComponent() {
                     <p>Дата активности: {chosenNode.activityEnd}</p>
                 </div>}
             </div>
-            <p style={{textAlign: 'left', margin: '8px 0', fontSize: '24px'}}>{hierarchy}</p>
+            <div style={{display: 'flex', gap: '10px'}}>
+                <button onClick={() => viewPrevDirectoryContent()} className="btnWithIcon">
+                    <LeftOutlined style={{fontSize: '15px'}}/>
+                </button>
+                <p style={{textAlign: 'left', fontSize: '18px'}}>{hierarchy}</p>
+            </div>
             <div style={{display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px'}}>
                 <p>Способ отображения</p>
                 <Select onChange={setViewMethod} style={{width: '100px'}} defaultValue={'table'} options={[
@@ -295,7 +372,7 @@ function MainPageComponent() {
                     {availableNodes.map((node, index) => (
                         <div key={index} className='availableNode' style={{maxWidth: '120px'}}>
                             {node.type == "Directory" ? 
-                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDocument(false); setChosenNode(node); setIsShowInfoChosenDirectory(true);}} onDoubleClick={() => viewDirectoryContent(node)}>
+                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDocument(false); setChosenNode(node); setIsShowInfoChosenDirectory(true);}} onDoubleClick={() => viewNextDirectoryContent()}>
                                 <FolderFilled style={{fontSize: '50px'}} />
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p>
                             </button>
@@ -309,7 +386,6 @@ function MainPageComponent() {
                     ))}
                 </Space>
             </div>}
-            
             {viewMethod == 'table' && <div>
                 <Table 
                     columns={columns}
