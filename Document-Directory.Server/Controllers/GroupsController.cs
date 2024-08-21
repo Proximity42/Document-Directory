@@ -69,6 +69,17 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
+        [HttpGet("inNode")]
+        async public Task GetInNode(int nodeId) //Получение всех групп, имеющих доступ к узлу
+        {
+            var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
+            var groups = _dbContext.Groups.Where(g => groupsId.Contains(g.Id)).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(groups);
+        }
+
         [HttpPost("composition")]
         async public Task AddParticipants(int id, List<int> participants) //Добавление удастника(-ов) в группу по его Id
         {
