@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Divider, Menu, Switch } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import ListUserComponent from './ListUserComponent';
+import UserList from './UserList';
 
-function PageAdminComponent() {
+function AdminPage() {
 
     const menuItems = [
         {
@@ -34,11 +34,11 @@ function PageAdminComponent() {
                     />
                 </div>
                 <div>
-                    <ListUserComponent />
+                    <UserList />
                 </div>
             </div>
             
         </>
     )
 }
-export default PageAdminComponent;
+export default AdminPage;

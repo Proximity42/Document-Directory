@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, List, Select, Modal } from 'antd';
 
-function ListUserComponent() {
+function UserList() {
     const [list, setList] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [item, setItem] = useState({});
@@ -96,4 +96,4 @@ function ListUserComponent() {
     
     
 }
-export default ListUserComponent;
+export default UserList;

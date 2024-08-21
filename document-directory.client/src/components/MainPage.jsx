@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover } from 'antd';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import TableWithNodesComponent from './TableWithNodesComponent';
+import TableWithNodesComponent from './TableWithNodes';
 const { Search } = Input;
 const { TextArea } = Input;
 
@@ -23,9 +23,28 @@ function MainPageComponent() {
     let documentFilterValue;
 
     async function searchDocumentByName(value, _e, info) {
-        const response = await fetch('https://localhost:7018/api/documents/search', {
-            
-        })
+        setAvailableNodes([]);
+        if (value != '') {
+            const response = await fetch('https://localhost:7018/api/documents/filterBy', {
+                method: 'POST',
+                headers: new Headers({ "Content-Type": "application/json" }),
+                credentials: 'include',
+                body: JSON.stringify({
+                    name: value
+                })
+            })
+            if (response.status == 200) {
+                const json = await response.json();
+                json.map((document) => {
+                    const activityEnd = dayjs(document.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    const createdAt = dayjs(document.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes((prevNodes) => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
+                })
+            }
+        } else {
+            getAvailableNodes();
+        }
+        
     } 
 
     async function createDirectory() {
@@ -186,6 +205,45 @@ function MainPageComponent() {
     {
 
     }
+
+    const columns = [
+        {
+            title: 'Название',
+            dataIndex: 'name',
+            sorter: true,
+            width: '60%',
+        },
+        {
+            title: 'Тип',
+            dataIndex: 'type',
+            render: (type) => type == "Directory" ? "Директория" : "Документ",
+            filters: [
+                {
+                    text: 'Документ',
+                    value: 'Document',
+                },
+                {
+                    text: 'Директория',
+                    value: 'Directory',
+                },
+            ],
+            width: '8%',
+        },
+        {
+            title: 'Дата создания',
+            dataIndex: 'createdAt',
+            width: '12%'
+        },
+        {
+            title: 'Дата активности',
+            dataIndex: 'activityEnd',
+            width: '10%'
+        },
+        {
+            width: '10%',
+            render: () => <a>Редактировать</a>
+        } 
+    ];
 
     
     // const onChangeViewMethod = (value) => {
@@ -352,7 +410,7 @@ function MainPageComponent() {
                     ))}
                 </Space>
             </div>}
-            {viewMethod == 'table' && <TableWithNodesComponent availableNodes={availableNodes}/>}
+            {viewMethod == 'table' && <Table dataSource={availableNodes} columns={columns} rowKey={(node) => node.id}/>}
         </>
     );
 }
