@@ -26,17 +26,7 @@ function Authorization() {
             })
         });
         if (response.status == 200) {
-            /*// Если успешно авторизованы, получаем куки из ответа
-            const data = response.Headers['Authorization']
-
-            // Создаем экземпляр объекта cookies
-            const cookies = new Cookies();
-
-            // Устанавливаем куки с токеном или другой информацией об авторизации
-            cookies.set('authToken', data);*/
-            
             const json = await response.json();
-            
             
             setUser(json);
             navigate('/');

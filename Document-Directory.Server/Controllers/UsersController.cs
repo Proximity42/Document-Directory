@@ -34,7 +34,8 @@ namespace Document_Directory.Server.Controllers
 
             await response.WriteAsJsonAsync(users);
         }
-        [HttpPatch]
+
+        [HttpPatch("RoleChange")]
         async public Task ChangeRole(UserToChangeRole user) //Обновление информации о пользователе
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
@@ -44,11 +45,45 @@ namespace Document_Directory.Server.Controllers
             _dbContext.SaveChanges();
 
             var response = this.Response;
-            response.StatusCode =200;
+            response.StatusCode = 200;
             await response.WriteAsJsonAsync(userToUpdate);
         }
 
-        [HttpDelete]
+        [HttpPatch("PasswordChange")]
+        async public Task ChangePassword(UserToChangePassword user) //Изменение пароля
+        {
+            var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
+            string password = HashFunctions.GenerationHashPassword(user.Password);
+            
+            userToUpdate.Password = password;
+
+            _dbContext.Users.Update(userToUpdate);
+            _dbContext.SaveChanges();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(userToUpdate);
+        }
+
+        [Authorize]
+        [HttpPatch("PasswordChangeAuthorized")]
+        async public Task ChangePassword() //Изменение пароля
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            Users user = _dbContext.Users.Find(userId);
+            string password = HashFunctions.GenerationHashPassword(user.Password);
+
+            user.Password = password;
+
+            _dbContext.Users.Update(user);
+            _dbContext.SaveChanges();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(user);
+        }
+
+        [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление пользователя
         {
             Users userToDelete = _dbContext.Users.FirstOrDefault(u => u.Id == id);
@@ -86,20 +121,44 @@ namespace Document_Directory.Server.Controllers
         {
             var users = _dbContext.Users.Include(u => u.role).ToList();
             List<UserToGet> userToGets = new List<UserToGet>();
-            
 
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(users);
         }
+        
         [HttpGet]
-        async public Task Get(int id) //Получение информации пользователя по его идентификатору
+        async public Task Get(int userId) //Получение информации пользователя по его идентификатору
         {
-            Users currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == id);
+            Users currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(currentUser);
         }
+
+        [HttpGet("inNode")]
+        async public Task GetInNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
+        {
+            var usersId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
+            var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id)).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(users);
+        }
+
+        [Authorize]
+        [HttpGet("notAdmin")]
+        async public Task GetExceptAdmins() //Получение всех пользователей, кроме авторизованного и администраторов
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            var users = _dbContext.Users.Include(u => u.role).Where(u => u.roleId != 1 && u.Id != userId).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(users);
+        }
+
 
         /*[Authorize]
         [HttpGet]

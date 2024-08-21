@@ -1,13 +1,14 @@
 ﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Button, List, Select, Modal } from 'antd';
+import { message, Button, List, Select, Modal } from 'antd';
 
 function UserList() {
     const [list, setList] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [item, setItem] = useState({});
-    const [roles, setRoles] = useState(getRoles())
+    const [roles, setRoles] = useState([]);
     const navigate = useNavigate();
+    const [messageApi, contextHolder] = message.useMessage();
     
     
 
@@ -15,15 +16,43 @@ function UserList() {
         setItem(item)
         setIsModalOpen(true);
     };
-    const handleOk = () => {
+    async function handleOk() {
+        const response = await fetch(`https://localhost:7018/api/users/${item.id}`, {
+            method: 'DELETE',
+            headers: new Headers({ "Content-Type": "application/json" }),
+        });
+        if (response.status == 200) {
+            const newList = list.filter((itemList) => itemList.id !== item.id);
+            setList(newList);
+            messageApi.open({
+                type: 'success',
+                content: 'Пользователь удален',
+            });
+        }
         setIsModalOpen(false);
     };
     const handleCancel = () => {
         setIsModalOpen(false);
     };
 
-    const handleChange = (value) => {
-        console.log(`selected ${value}`);
+    async function handleChange(value, item) {
+        setItem(item);
+        item.roleId = value
+        const response = await fetch('https://localhost:7018/api/users', {
+            method: 'PATCH',
+            headers: new Headers({ "Content-Type": "application/json" }),
+            body: JSON.stringify({
+                id: item.id,
+                roleId: item.roleId,
+            })
+        });
+        if (response.status == 200) {
+            messageApi.open({
+                type: 'success',
+                content: 'Роль пользователя изменена',
+            });
+        }
+        
     };
 
     async function getAllUsers() {
@@ -33,7 +62,7 @@ function UserList() {
         })
         const json = await response.json();
         setList(json);
-        getRoles()
+        
     }
 
     
@@ -51,33 +80,33 @@ function UserList() {
 
     useEffect(() => {
         getAllUsers();
+        getRoles();
     }, []);
         
     
 
     return (
         <>
+            {contextHolder}
             <List 
                 style={{ width: 700 }}
                 dataSource={list}
 
                 renderItem={(item) => (
                     <List.Item style={{ marginLeft: '10px', textAlign: 'left' }}
-                        actions={[ <Select
+                        actions={[<Select style={{ width: '145px' }}
                             defaultValue={item.roleId}
-                            onChange={handleChange}
+                            onChange={(e) => handleChange(e, item)}
                             options={[
                                 {
-                                    value: roles[0].id,
-                                    label: roles[0].userRole,
+                                    value: 1,
+                                    label: "Администратор",
                                 },
                                 {
-                                    value: roles[1].id,
-                                    label: roles[1].userRole,
+                                    value: 2,
+                                    label: "Пользователь",
                                 },
-
                             ]
-
                             }
                         />, <a onClick={() => console.log(item.id)}>Сменить пароль</a>, <a onClick={() => showModal(item)}>Удалить</a>,]}
                     >{item.login} 

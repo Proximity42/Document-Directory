@@ -12,6 +12,13 @@
         public int Id { get; set; }
         public int RoleId { get; set; }
     }
+
+    public class UserToChangePassword
+    {
+        public int Id { get; set; }
+        public string Password { get; set; }
+    }
+
     public class UserToGet
     {
         public int Id { get; set; }
