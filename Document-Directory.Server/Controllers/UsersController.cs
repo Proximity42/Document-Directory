@@ -66,7 +66,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [Authorize]
-        [HttpPatch("PasswordChange")]
+        [HttpPatch("PasswordChangeAuth")]
         async public Task ChangePassword() //Изменение пароля
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);

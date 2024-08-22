@@ -17,7 +17,7 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost]
         async public Task Create(FolderToCreate folder) //Создание папки и помещение ее во вложенную папку по ее id
         {
