@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { message, Button, List, Select, Modal, Input, Form } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
 
-function ListUserComponent() {
+function UserList() {
     const [list, setList] = useState([]);
     const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
     const [isModalOpenChangePassword, setIsModalOpenChangePassword] = useState(false);
@@ -255,4 +255,4 @@ function ListUserComponent() {
     
     
 }
-export default ListUserComponent;
+export default UserList;

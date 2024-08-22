@@ -2,7 +2,8 @@ import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover } from 'antd';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import TableWithNodesComponent from './TableWithNodesComponent';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc); 
 const { Search } = Input;
 const { TextArea } = Input;
 
@@ -15,17 +16,35 @@ function MainPageComponent() {
     const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
     const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [chosenNode, setChosenNode] = useState({})
-    // const [isViewTable, setIsViewTable] = useState(false);
-    // const [isViewIcons, setIsViewIcons] = useState(false);
     const [viewMethod, setViewMethod] = useState('table')
     const [authToken, setAuthToken] = useState("")
     const [directoryHierarchy, setDirectoryHierarchy] = useState([]);
+    const [dateFilterValue, setDateFilterValue] = useState(1);
     let documentFilterValue;
 
     async function searchDocumentByName(value, _e, info) {
-        const response = await fetch('https://localhost:7018/api/documents/search', {
-            
-        })
+        setAvailableNodes([]);
+        if (value != '') {
+            const response = await fetch('https://localhost:7018/api/documents/filterBy', {
+                method: 'POST',
+                headers: new Headers({ "Content-Type": "application/json" }),
+                credentials: 'include',
+                body: JSON.stringify({
+                    name: value
+                })
+            })
+            if (response.status == 200) {
+                const json = await response.json();
+                json.map((document) => {
+                    const activityEnd = dayjs(document.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    const createdAt = dayjs(document.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes((prevNodes) => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
+                })
+            }
+        } else {
+            await getAvailableNodes();
+        }
+        
     } 
 
     async function createDirectory() {
@@ -50,10 +69,10 @@ function MainPageComponent() {
 
     async function createDocument() {
         const name = document.querySelector('#inputDocumentName').value;
-        let outputDate = document.querySelector('#inputDocumentActivityDate').value;
-        let activityDate = dayjs(outputDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
+        const inputActivityDate = document.querySelector('#inputDocumentActivityDate').value;
+        const activityDate = dayjs.utc(inputActivityDate, 'DD-MM-YYYY').format();
+
         const content = document.querySelector('#inputDocumentContent').value;
-        const date = dayjs(activityDate).toJSON();
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -61,7 +80,7 @@ function MainPageComponent() {
             body: JSON.stringify({
                 name: name,
                 content: content,
-                activityEnd: date,
+                activityEnd: activityDate,
                 folderId: 0
             })
         });
@@ -73,9 +92,6 @@ function MainPageComponent() {
             setAvailableNodes([...availableNodes, {...json, activityEnd: activityEnd, createdAt: createdAt}]);
             setIsDocumentCreateFormVisible(false);
         }
-    }
-
-    function onChangeDateActivity(date, dateString) {
     }
 
     async function deleteChosenNode() {
@@ -96,7 +112,6 @@ function MainPageComponent() {
     async function viewDirectoryContent(directory) {
         const response = await fetch(`https://localhost:7018/api/NodeHierarchy/${directory.id}`, {
             credentials: 'include',
-            headers: new Headers({'Access-Control-Allow-Credentials': 'true'})
         });
         if (response.status == 200)
         {
@@ -162,10 +177,10 @@ function MainPageComponent() {
     async function getAvailableNodes() {
         const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
             credentials: 'include',
-            headers: new Headers({'Access-Control-Allow-Credentials': 'true'})
         });
         if (response.status == 200)
         {
+            setAvailableNodes([]);
             const json = await response.json();
             json.map((node) => {
                 if (node.type == "Document")
@@ -182,10 +197,81 @@ function MainPageComponent() {
         }
     }
 
-    async function documentsFilter()
+    async function filterByDate()
     {
-
+        let startDate = document.querySelector("#filterStartDate").value;
+        let endDate = document.querySelector("#filterEndDate").value;
+        if (startDate != '' || endDate != '')
+        {
+            let filterBy = dateFilterValue == 1 ? "CreatedDate" : "ActivityDate";
+            let startDateISO = '';
+            let endDateISO = '';
+            if (startDate != '') {
+                startDateISO = dayjs.utc(startDate, 'DD-MM-YYYY').format();
+            }
+            if (endDate != '') {
+                endDateISO = dayjs.utc(endDate, 'DD-MM-YYYY').format();
+            }
+            const response = await fetch("https://localhost:7018/api/documents/filterby", {
+                method: 'POST',
+                credentials: 'include',
+                headers: new Headers({"Content-Type": "application/json"}),
+                body: JSON.stringify({
+                    startDate: startDateISO == '' ? null : startDateISO,
+                    endDate: endDateISO == '' ? null : endDateISO,
+                    filterBy: filterBy,
+                })
+            })
+            if (response.status == 200) {
+                setAvailableNodes([]);
+                const json = await response.json();
+                json.map((document) => {
+                    const activityEnd = dayjs(document.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    const createdAt = dayjs(document.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes(prevNodes => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
+                })
+            }
+        }
     }
+
+    const columns = [
+        {
+            title: 'Название',
+            dataIndex: 'name',
+            sorter: true,
+            width: '60%',
+        },
+        {
+            title: 'Тип',
+            dataIndex: 'type',
+            render: (type) => type == "Directory" ? "Директория" : "Документ",
+            filters: [
+                {
+                    text: 'Документ',
+                    value: 'Document',
+                },
+                {
+                    text: 'Директория',
+                    value: 'Directory',
+                },
+            ],
+            width: '8%',
+        },
+        {
+            title: 'Дата создания',
+            dataIndex: 'createdAt',
+            width: '12%'
+        },
+        {
+            title: 'Дата активности',
+            dataIndex: 'activityEnd',
+            width: '10%'
+        },
+        {
+            width: '10%',
+            render: () => <a>Редактировать</a>
+        } 
+    ];
 
     
     // const onChangeViewMethod = (value) => {
@@ -252,11 +338,11 @@ function MainPageComponent() {
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата создания документа</p>
-                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} style={{color: 'black'}}/>
+                            <DatePicker disabledDate={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} style={{color: 'black'}}/>
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата окончания действия документа</p>
-                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
+                            <DatePicker disabledDate={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")} format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
                         </div>
                         <TextArea disabled defaultValue={chosenNode.content} style={{textWrap: 'wrap', textAlign: 'left', opacity: '1', color: 'black', cursor: 'pointer'}} autoSize={{minRows: 18, maxRows: 20}}/>
                     </div>
@@ -272,24 +358,26 @@ function MainPageComponent() {
                         width: '70%'
                     }}
                 />
-                <div style={{display: 'flex', gap: '10px', marginTop: '15px'}}>
+                <div style={{display: 'flex', gap: '5px', marginTop: '15px', alignItems: 'center'}}>
                     <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                         <p style={{ margin: '0', textAlign: 'left'}}>Фильтрация документов по дате</p>
-                        <Radio.Group onChange={documentsFilter} value={documentFilterValue} style={{display: 'flex'}}>
+                        <Radio.Group style={{display: 'flex'}} defaultValue={dateFilterValue}>
                             <Radio value={1}>создания</Radio>
                             <Radio value={2}>активности</Radio>
                         </Radio.Group>
                     </div>
-                    <div style={{display: 'flex', gap: '20px'}}>
+                    <div style={{display: 'flex', gap: '5px'}}>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>с</p>
-                            <DatePicker placeholder="Укажите дату" style={{width: '130px'}}/>
+                            <DatePicker placeholder="Укажите дату" style={{width: '130px'}} id="filterStartDate" format={{format: 'DD-MM-YYYY'}}/>
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>до</p>
-                            <DatePicker placeholder="Укажите дату" style={{width: '130px'}}/>
+                            <DatePicker placeholder="Укажите дату" style={{width: '130px'}} id="filterEndDate" format={{format: 'DD-MM-YYYY'}}/>
                         </div>
                     </div>
+                    <Button onClick={filterByDate}>Применить</Button>
+                    <CloseOutlined onClick={() => {getAvailableNodes();}}/>
                 </div>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '5px'}}>
@@ -352,7 +440,7 @@ function MainPageComponent() {
                     ))}
                 </Space>
             </div>}
-            {viewMethod == 'table' && <TableWithNodesComponent availableNodes={availableNodes}/>}
+            {viewMethod == 'table' && <Table dataSource={availableNodes} columns={columns} rowKey={(node) => node.id}/>}
         </>
     );
 }

@@ -133,21 +133,22 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(document);
         }
 
-        [Authorize]
-        [HttpGet("filterBy")]
-        async public Task FilterBy(DateTimeOffset? startDate, DateTimeOffset? endDate, string? name, string filterBy = "CreatedDate", string sortBy = "Name", bool sortDescending = false) //Фильтрация документов по дате активности, дате создания или по имени с сортировкой
+        //[Authorize]
+        [HttpPost("filterBy")]
+        async public Task FilterBy(FiltersParameters filtersParameters) //Фильтрация документов по дате активности, дате создания или по имени с сортировкой
         {
-            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            int userId = 3;
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
             List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
 
             var filteredNodes = documents.Where(n => n.Type == "Document").AsQueryable();
 
-            if (startDate.HasValue)
+            if (filtersParameters.startDate.HasValue)
             {
-                var startDateUtc = startDate.Value.UtcDateTime;
-                if (filterBy == "ActivityDate")
+                var startDateUtc = filtersParameters.startDate.Value.UtcDateTime;
+                if (filtersParameters.filterBy == "ActivityDate")
                 {
                     filteredNodes = filteredNodes.Where(n => n.ActivityEnd >= startDateUtc);
                 }
@@ -157,10 +158,10 @@ namespace Document_Directory.Server.Controllers
                 }
             }
 
-            if (endDate.HasValue)
+            if (filtersParameters.endDate.HasValue)
             {
-                var endDateUtc = endDate.Value.UtcDateTime;
-                if (filterBy == "ActivityDate")
+                var endDateUtc = filtersParameters.endDate.Value.UtcDateTime;
+                if (filtersParameters.filterBy == "ActivityDate")
                 {
                     filteredNodes = filteredNodes.Where(n => n.ActivityEnd <= endDateUtc);
                 }
@@ -170,11 +171,11 @@ namespace Document_Directory.Server.Controllers
                 }
             }
             
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(filtersParameters.name))
             {
-                var lowerName = name.ToLower();
+                var lowerName = filtersParameters.name.ToLower();
 
-                if (name.StartsWith("\"") && name.EndsWith("\""))
+                if (filtersParameters.name.StartsWith("\"") && filtersParameters.name.EndsWith("\""))
                 {
                     var exactName = lowerName.Trim('\"');
                     filteredNodes = filteredNodes.Where(n => n.Name.ToLower() == exactName);
@@ -185,7 +186,7 @@ namespace Document_Directory.Server.Controllers
                 }
             }
 
-            filteredNodes = NodeFunctions.SortBy(filteredNodes, sortBy, sortDescending);
+            filteredNodes = NodeFunctions.SortBy(filteredNodes, filtersParameters.sortBy, filtersParameters.sortDescending);
 
             var result = filteredNodes.ToList();
 

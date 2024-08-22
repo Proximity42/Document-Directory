@@ -81,6 +81,17 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
+        [HttpGet("inNode")]
+        async public Task GetInNode(int nodeId) //Получение всех групп, имеющих доступ к узлу
+        {
+            var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
+            var groups = _dbContext.Groups.Where(g => groupsId.Contains(g.Id)).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(groups);
+        }
+
         [HttpDelete("{id}")]
         async public Task DeleteGroup(int id)
         {

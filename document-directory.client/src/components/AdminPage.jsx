@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, NavLink } from 'react-router-dom';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Divider, Menu, Switch } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
+import UserList from './UserList';
 import { UserOutlined, TeamOutlined } from '@ant-design/icons';
 
 import ListUserComponent from './ListUserComponent';
@@ -10,6 +12,7 @@ import ListGroupComponent from './ListGroupComponent';
 
 
 function PageAdminComponent() {
+function AdminPage() {
     const [isShowListUser, setIsShowListUser] = useState(false);
     const [isShowListGroup, setIsShowListGroup] = useState(false);
     
@@ -67,4 +70,4 @@ function PageAdminComponent() {
         </>
     )
 }
-export default PageAdminComponent;
+export default AdminPage;

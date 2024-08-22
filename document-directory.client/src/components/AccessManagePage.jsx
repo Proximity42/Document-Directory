@@ -1,0 +1,148 @@
+import React, {useEffect, useState} from 'react';
+import dayjs from 'dayjs';
+import {Transfer, Button, Typography, Table} from 'antd';
+
+
+function AccessManagePage() {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [availableNodes, setAvailableNodes] = useState([]);
+
+    function handleClick() {
+        setIsModalVisible(true);
+    }
+
+    async function getAvailableNodes() {
+        const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
+            credentials: 'include',
+        });
+        if (response.status == 200)
+        {
+            const json = await response.json();
+            json.map((node) => {
+                if (node.type == "Document")
+                {
+                    const activityEnd = dayjs(node.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    const createdAt = dayjs(node.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes(prevNodes => [...prevNodes, {...node, activityEnd: activityEnd, createdAt: createdAt}]);
+                }
+                else {
+                    const createdAt = dayjs(node.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                    setAvailableNodes(prevNodes => [...prevNodes, {...node, createdAt: createdAt}]);
+                }
+            });
+        }
+        availableNodes.includes
+    }
+
+    function getUsers() {
+
+    }
+
+    const columns = [
+        {
+            title: 'Название',
+            dataIndex: 'name',
+            sorter: true,
+            width: '50%',
+        },
+        {
+            title: 'Тип',
+            dataIndex: 'type',
+            render: (type) => type == "Directory" ? "Директория" : "Документ",
+            filters: [
+                {
+                    text: 'Документ',
+                    value: 'Document',
+                },
+                {
+                    text: 'Директория',
+                    value: 'Directory',
+                },
+            ],
+            width: '8%',
+        },
+        {
+            title: 'Дата создания',
+            dataIndex: 'createdAt',
+            width: '12%'
+        },
+        {
+            title: 'Дата активности',
+            dataIndex: 'activityEnd',
+            width: '10%'
+        },
+        {
+            title: 'Действие',
+            width: '20%',
+            render: () => (
+                <a onClick={handleClick}>Управление доступом</a>
+            )
+        } 
+    ];
+
+    useEffect(() => {
+        getAvailableNodes();
+    }, [])
+
+    return (
+        <div>
+            {isModalVisible && (
+                <div className='modal'>
+                    <div className='modalContent'>
+                        <div>
+                            <h3>Выберите пользователей, которым хотите предоставить доступ</h3>
+                            <Transfer
+                                dataSource={availableNodes}
+                                titles={['С доступом', 'Без доступа']}
+                                targetKeys={availableNodes}
+                                selectedKeys={[]}
+                                render={(node) => node.name}
+                                locale={
+                                    {
+                                        itemUnit: '',
+                                        itemsUnit: '',
+                                        notFoundContent: 'Список пуст'
+                                    }
+                                }
+                                listStyle={{
+                                    width: '500px',
+                                    height: '300px',
+                                    textAlign: 'left'
+                                }}
+                            />
+                            <br />
+                            <h3>Выберите группы пользователей, которым хотите предоставить доступ</h3>
+                            <Transfer
+                                dataSource={availableNodes}
+                                titles={['С доступом', 'Без доступа']}
+                                targetKeys={availableNodes}
+                                selectedKeys={[]}
+                                render={(node) => node.name}
+                                locale={
+                                    {
+                                        itemUnit: '',
+                                        itemsUnit: '',
+                                        notFoundContent: 'Список пуст'
+                                    }
+                                }
+                                listStyle={{
+                                    width: '500px',
+                                    height: '300px',
+                                    textAlign: 'left'
+                                }}
+                            />
+                            <div style={{display: 'flex', justifyContent: 'space-around'}}>
+                                <Button size='small' onClick={() => setIsModalVisible(false)} style={{width: "100px", marginTop: '10px'}}>Сохранить</Button>
+                                <Button size='small' onClick={() => setIsModalVisible(false)} style={{width: "100px", marginTop: '10px'}}>Отменить</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <Table columns={columns} dataSource={availableNodes} rowKey={(node) => node.id}/>
+        </div>
+    )
+}
+
+
+export default AccessManagePage;

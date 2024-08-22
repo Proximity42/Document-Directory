@@ -7,13 +7,12 @@ import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
 
-function AuthorizationComponent() {
+function Authorization() {
     const [user, setUser] = useState({});
     const navigate = useNavigate();
 
     const [messageApi, contextHolder] = message.useMessage();
         
-    
     async function authorization() {
         const login = document.querySelector('#inputLogin').value;
         const password = document.querySelector('#inputPassword').value;
@@ -79,8 +78,6 @@ function AuthorizationComponent() {
             </div>
         
         </>
-        
-        
     )
 }
-export default AuthorizationComponent;
+export default Authorization;

@@ -66,7 +66,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [Authorize]
-        [HttpPatch("PasswordChangeAuth")]
+        [HttpPatch("PasswordChangeAuthorized")]
         async public Task ChangePassword() //Изменение пароля
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
@@ -121,20 +121,44 @@ namespace Document_Directory.Server.Controllers
         {
             var users = _dbContext.Users.Include(u => u.role).ToList();
             List<UserToGet> userToGets = new List<UserToGet>();
-            
 
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(users);
         }
+        
         [HttpGet]
-        async public Task Get(int id) //Получение информации пользователя по его идентификатору
+        async public Task Get(int userId) //Получение информации пользователя по его идентификатору
         {
-            Users currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == id);
+            Users currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(currentUser);
         }
+
+        [HttpGet("inNode")]
+        async public Task GetInNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
+        {
+            var usersId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
+            var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id)).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(users);
+        }
+
+        [Authorize]
+        [HttpGet("notAdmin")]
+        async public Task GetExceptAdmins() //Получение всех пользователей, кроме авторизованного и администраторов
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            var users = _dbContext.Users.Include(u => u.role).Where(u => u.roleId != 1 && u.Id != userId).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(users);
+        }
+
 
         /*[Authorize]
         [HttpGet]

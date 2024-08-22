@@ -31,4 +31,24 @@ namespace Document_Directory.Server.Models
         public List<int?> groupsId { get; set; }
         public List<int?> usersId { get; set; }
     }
+
+    public class FiltersParameters
+    {
+        public DateTimeOffset? startDate { get; set; }
+        public DateTimeOffset? endDate { get; set; }
+        public string? name { get; set; }
+        public string filterBy { get; set;}
+        public string sortBy { get; set; }
+        public bool sortDescending { get; set; } 
+
+        public FiltersParameters (DateTimeOffset? startDate, DateTimeOffset? endDate, string? name, string filterBy = "CreatedDate", string sortBy = "Name", bool sortDescending = false)
+        {
+            this.startDate = startDate;
+            this.endDate = endDate;
+            this.name = name;
+            this.filterBy = filterBy;
+            this.sortBy = sortBy;
+            this.sortDescending = sortDescending;
+        }
+    }
 }
