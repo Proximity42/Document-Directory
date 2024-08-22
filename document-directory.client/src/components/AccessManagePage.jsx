@@ -1,8 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import dayjs from 'dayjs';
 import {Transfer, Button, Typography, Table} from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
-import TableWithNodes from './TableWithNodes';
 
 
 function AccessManagePage() {
@@ -33,10 +31,11 @@ function AccessManagePage() {
                 }
             });
         }
+        availableNodes.includes
     }
 
     function getUsers() {
-        
+
     }
 
     const columns = [
@@ -91,7 +90,6 @@ function AccessManagePage() {
                 <div className='modal'>
                     <div className='modalContent'>
                         <div>
-                            {/* <CloseOutlined onClick={() => setIsModalVisible(false)}/> */}
                             <h3>Выберите пользователей, которым хотите предоставить доступ</h3>
                             <Transfer
                                 dataSource={availableNodes}
@@ -101,13 +99,13 @@ function AccessManagePage() {
                                 render={(node) => node.name}
                                 locale={
                                     {
-                                        itemUnit: 'пользователи',
-                                        itemsUnit: 'пользователи',
+                                        itemUnit: '',
+                                        itemsUnit: '',
                                         notFoundContent: 'Список пуст'
                                     }
                                 }
                                 listStyle={{
-                                    width: '50%',
+                                    width: '500px',
                                     height: '300px',
                                     textAlign: 'left'
                                 }}
@@ -122,13 +120,13 @@ function AccessManagePage() {
                                 render={(node) => node.name}
                                 locale={
                                     {
-                                        itemUnit: 'группы',
-                                        itemsUnit: 'группы',
+                                        itemUnit: '',
+                                        itemsUnit: '',
                                         notFoundContent: 'Список пуст'
                                     }
                                 }
                                 listStyle={{
-                                    width: '50%',
+                                    width: '500px',
                                     height: '300px',
                                     textAlign: 'left'
                                 }}
@@ -142,7 +140,6 @@ function AccessManagePage() {
                 </div>
             )}
             <Table columns={columns} dataSource={availableNodes} rowKey={(node) => node.id}/>
-            {/* <TableWithNodes availableNodes={availableNodes} columns={columns}/> */}
         </div>
     )
 }
