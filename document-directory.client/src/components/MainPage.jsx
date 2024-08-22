@@ -17,7 +17,6 @@ function MainPageComponent() {
     const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [chosenNode, setChosenNode] = useState({})
     const [viewMethod, setViewMethod] = useState('table')
-    const [authToken, setAuthToken] = useState("")
     const [directoryHierarchy, setDirectoryHierarchy] = useState([]);
     const [dateFilterValue, setDateFilterValue] = useState(1);
     let documentFilterValue;
@@ -152,10 +151,7 @@ function MainPageComponent() {
         if (directoryHierarchy.length != 0)
         {
             let prevDirectory = directoryHierarchy.flat().slice(directoryHierarchy.length - 2)[0];
-            console.log(prevDirectory.name)
-            const indexPrevDirectory = hierarchy.lastIndexOf(directoryHierarchy[directoryHierarchy.length - 1].name);
-            console.log(indexPrevDirectory)
-            
+            const indexPrevDirectory = hierarchy.lastIndexOf(directoryHierarchy[directoryHierarchy.length-1].name);
             setAvailableNodes([]);
             if (directoryHierarchy.length > 1)
             {

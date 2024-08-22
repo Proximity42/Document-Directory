@@ -1,9 +1,10 @@
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 
-const ProtectedRoute = ({ isAuthenticated, children }) => {
-    const navigate = useNavigate();
-    if (!isAuthenticated) {
-        navigate('/login');
+
+const ProtectedRoute = ({ children }) => {
+    if (Cookie.get('test') === undefined) {
+        return <Navigate to='/login'/>
     }
     return children;
 };
