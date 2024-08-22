@@ -20,9 +20,9 @@ namespace Document_Directory.Server.Controllers
         }
 
         [HttpPost]
-        async public Task Create(int nodeId, int? groupId, int? userId)
+        async public Task Create(AccessToCreate accessToCreate)
         {
-            NodeAccess nodeAccess = new NodeAccess(nodeId, groupId, userId);
+            NodeAccess nodeAccess = new NodeAccess(accessToCreate.nodeId, accessToCreate.groupId, accessToCreate.userId);
 
             _dbContext.NodeAccess.Add(nodeAccess);
             _dbContext.SaveChanges();

@@ -25,6 +25,13 @@ namespace Document_Directory.Server.Models
         public DateTimeOffset ActivityEnd { get; set; }
     }
 
+    public class AccessToCreate
+    {
+        public int nodeId { get; set; }
+        public int? groupId { get; set; }
+        public int? userId { get; set; }
+    }
+
     public class AccessToUpdate
     {
         public int Id { get; set; }
