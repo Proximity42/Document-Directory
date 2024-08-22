@@ -17,7 +17,7 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost]
         async public Task Create(FolderToCreate folder) //Создание папки и помещение ее во вложенную папку по ее id
         {
@@ -34,10 +34,11 @@ namespace Document_Directory.Server.Controllers
             {
                 NodeHierarchy hierarchy = new NodeHierarchy(folder.folderId, nodeId);
                 _dbContext.NodeHierarchy.Add(hierarchy);
-                NodeAccess nodeAccess = new NodeAccess(nodeId, null, userId);
-                _dbContext.NodeAccess.Add(nodeAccess);
-                _dbContext.SaveChanges();
             }
+            
+            NodeAccess nodeAccess = new NodeAccess(nodeId, null, userId);
+            _dbContext.NodeAccess.Add(nodeAccess);
+            _dbContext.SaveChanges();
 
             var response = this.Response;
             response.StatusCode = 201;

@@ -20,6 +20,7 @@ namespace Document_Directory.Server.Controllers
         async public Task Create(Group group) //Создание группы
         {
             Groups groups = new Groups(group.Name);
+            _dbContext.Groups.Add(groups);
             foreach (var item in group.Participants) 
             {
                 UserGroups users = new UserGroups();
@@ -34,10 +35,10 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(groups);
         }
         [HttpPatch]
-        async public Task Rename(int id, string newName) //Переименование группы по его Id
+        async public Task Rename(GroupToRename group) //Переименование группы по его Id
         {
-            Groups groupToRename = _dbContext.Groups.FirstOrDefault(g => g.Id == id);
-            groupToRename.Name = newName;
+            Groups groupToRename = _dbContext.Groups.FirstOrDefault(g => g.Id == group.Id);
+            groupToRename.Name = group.Name;
 
             _dbContext.Groups.Update(groupToRename);
             _dbContext.SaveChanges();
@@ -47,21 +48,32 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(groupToRename);
         }
 
-        [HttpGet]
+        [HttpGet("all")]
+        async public Task GetAllGroups()
+        {
+            var response = this.Response;   
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(_dbContext.Groups);
+        }
+
+        [HttpGet("{groupId}")]
         public async Task GetGroupParticipants(int groupId) //Получение списка участников группы по его Id
         {
             List<int> participantsId = new List<int>();
             List<Users> users = new List<Users>();
+            List<Users> allUsers = _dbContext.Users.ToList();
+            List<UserGroups> groups = _dbContext.UserGroups.ToList();
 
-            foreach(UserGroups user in _dbContext.UserGroups)
+            foreach (UserGroups user in groups)
             {
-                participantsId.Add(user.UserId);
+                if (user.GroupId == groupId)
+                    participantsId.Add(user.UserId);
             }
 
-            foreach(int userId in participantsId)
+            foreach (Users user in allUsers)
             {
-                Users user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
-                users.Add(user);
+                if (participantsId.Contains(user.Id))
+                    users.Add(user);
             }
 
             var response = this.Response;
@@ -78,6 +90,18 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(groups);
+        }
+
+        [HttpDelete("{id}")]
+        async public Task DeleteGroup(int id)
+        {
+            Groups group = _dbContext.Groups.FirstOrDefault((group) => group.Id == id);
+            _dbContext.Groups.Remove(group);
+            _dbContext.SaveChanges();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsync("");
         }
 
         [HttpPost("composition")]

@@ -3,20 +3,28 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, NavLink } from 'react-router-dom';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Divider, Menu, Switch } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
 import UserList from './UserList';
+import { UserOutlined, TeamOutlined } from '@ant-design/icons';
+
+
+import ListGroupComponent from './ListGroupComponent';
+
+
 
 function AdminPage() {
     const [isShowListUser, setIsShowListUser] = useState(false);
-    const [roles, setRoles] = useState([]);
+    const [isShowListGroup, setIsShowListGroup] = useState(false);
+    
 
     const handleChange = (item) => {
 
         if (item.key === '1') {
             setIsShowListUser(true);
+            setIsShowListGroup(false);
         }
         else {
             setIsShowListUser(false);
+            setIsShowListGroup(true);
         }
     }
 
@@ -30,26 +38,30 @@ function AdminPage() {
         },
         {
             key: '2',
+            icon: <TeamOutlined />,
             label: 'Все группы',
         }
     ]
 
     return (
         <>
-            <h1>Управление</h1>
+            <h3>Управление пользователями и группами</h3>
             <div style={{ display: 'flex' }}>
                 <div>
                     <Menu id='menu'
                         style={{
-                            width: 256,
+                            width: 185,
+                            textAlign: 'left',
                         }}
-                        defaultSelectedKeys={['1']}
+                        //defaultSelectedKeys={['1']}
                         onClick={handleChange}
                         items={menuItems}
+
                     />
                 </div>
                 <div>
-                    {isShowListUser && <UserList /> }
+                    {isShowListUser && <UserList />}
+                    {isShowListGroup && <ListGroupComponent />}
                       
                 </div>
             </div>
