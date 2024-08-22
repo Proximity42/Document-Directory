@@ -103,7 +103,20 @@ namespace Document_Directory.Server.Controllers
             var folder = _dbContext.Nodes.Where(n => n.Type == "Directory").FirstOrDefault(n => n.Id == id);
             await response.WriteAsJsonAsync(folder);
         }
-        
+
+        [Authorize]
+        [HttpGet("nodes-author")]
+        async public Task GetNodesAuthor() //Получение всех документов, автором которых является текущий пользователь
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            var nodes = (from Node in _dbContext.Nodes where (Node.UserId == userId && Node.Type == "Directory") select Node).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(nodes);
+        }
+
+
         [Authorize]        
         [HttpGet("filterBy")]
         async public Task FilterBy(DateTimeOffset? startDate, DateTimeOffset? endDate, string? name, string filterBy = "CreatedDate", string sortBy = "Name", bool sortDescending = false) //Фильтрация папок по дате создания или по имени с сортировкой

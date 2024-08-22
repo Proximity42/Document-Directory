@@ -81,7 +81,7 @@ function MainPageComponent() {
                 name: name,
                 content: content,
                 activityEnd: activityDate,
-                folderId: directoryHierarchy[directoryHierarchy.length-1].id
+                folderId: directoryHierarchy.length !== 0 ? [directoryHierarchy.length - 1].id : 0
             })
         });
         if (response.status == 201)

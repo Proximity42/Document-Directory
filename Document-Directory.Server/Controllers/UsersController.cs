@@ -159,7 +159,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
-
+        
         /*[Authorize]
         [HttpGet]
         async public Task Get() //Получение информации пользователя по его идентификатору

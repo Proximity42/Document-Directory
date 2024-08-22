@@ -31,7 +31,6 @@ function AccessManagePage() {
                 }
             });
         }
-        availableNodes.includes
     }
 
     function getUsers() {
