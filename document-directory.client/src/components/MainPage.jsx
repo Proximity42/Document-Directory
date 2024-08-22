@@ -49,13 +49,14 @@ function MainPageComponent() {
 
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
+        
         const response = await fetch('https://localhost:7018/api/folders', {
             method: 'POST', 
             headers: new Headers({ "Content-Type": "application/json" }), 
             credentials: 'include',
             body: JSON.stringify({
                 name: name,
-                folderId: 0
+                folderId: directoryHierarchy.length !== 0 ? [directoryHierarchy.length - 1].id : 0
             })
         });
         if (response.status == 201)
@@ -81,7 +82,7 @@ function MainPageComponent() {
                 name: name,
                 content: content,
                 activityEnd: activityDate,
-                folderId: 0
+                folderId: directoryHierarchy[directoryHierarchy.length-1].id
             })
         });
         if (response.status == 201)
@@ -150,21 +151,30 @@ function MainPageComponent() {
     async function viewPrevDirectoryContent() {
         if (directoryHierarchy.length != 0)
         {
-            let prevDirectory = directoryHierarchy.flat().slice(directoryHierarchy.length - 1)[0];
-            const indexPrevDirectory = hierarchy.lastIndexOf(prevDirectory.name);
+            let prevDirectory = directoryHierarchy.flat().slice(directoryHierarchy.length - 2)[0];
+            console.log(prevDirectory.name)
+            const indexPrevDirectory = hierarchy.lastIndexOf(directoryHierarchy[directoryHierarchy.length - 1].name);
+            console.log(indexPrevDirectory)
+            
             setAvailableNodes([]);
             if (directoryHierarchy.length > 1)
             {
                 let status = await viewDirectoryContent(prevDirectory);
                 if (status == 200) {
+                    console.log(hierarchy.substring(0, indexPrevDirectory));
                     setHierarchy((prevHierarchy) => prevHierarchy.substring(0, indexPrevDirectory));
-                    setHierarchy((prevHierarchy) => prevHierarchy.substring(0, prevHierarchy.lastIndexOf('/')));
-                    setDirectoryHierarchy(directoryHierarchy.filter((directory) => directory != prevDirectory));
+                    if (hierarchy.length > 2) {
+                        setHierarchy((prevHierarchy) => prevHierarchy.substring(0, prevHierarchy.lastIndexOf('/')));
+
+                    }
+                    setDirectoryHierarchy(directoryHierarchy.filter((directory) => directory != directoryHierarchy[directoryHierarchy.length - 1]));
                     setChosenNode({});
                 }
             } else {
                 await getAvailableNodes();
-                setHierarchy((prevHierarchy) => prevHierarchy.substring(0, indexPrevDirectory));
+                console.log(hierarchy)
+                setHierarchy((prevHierarchy) => prevHierarchy.substring(0, 1));
+                
                 setDirectoryHierarchy([]);
                 setChosenNode({});
             }
@@ -338,11 +348,11 @@ function MainPageComponent() {
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата создания документа</p>
-                            <DatePicker disabledDate={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} style={{color: 'black'}}/>
+                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} style={{color: 'black'}}/>
                         </div>
                         <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                             <p>Дата окончания действия документа</p>
-                            <DatePicker disabledDate={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")} format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
+                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
                         </div>
                         <TextArea disabled defaultValue={chosenNode.content} style={{textWrap: 'wrap', textAlign: 'left', opacity: '1', color: 'black', cursor: 'pointer'}} autoSize={{minRows: 18, maxRows: 20}}/>
                     </div>

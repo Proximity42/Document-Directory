@@ -134,12 +134,11 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(document);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("filterBy")]
         async public Task FilterBy(FiltersParameters filtersParameters) //Фильтрация документов по дате активности, дате создания или по имени с сортировкой
         {
-            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
-            int userId = 3;
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
             List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);

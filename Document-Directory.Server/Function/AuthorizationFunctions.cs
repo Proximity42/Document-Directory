@@ -20,7 +20,7 @@ namespace Document_Directory.Server.Function
                     issuer: AuthOptions.ISSUER,
                     audience: AuthOptions.AUDIENCE,
                     claims: claimsIdentity.Claims,
-                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(10)), // время действия 2 минуты
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(20)), // время действия 20 минут
                     signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }

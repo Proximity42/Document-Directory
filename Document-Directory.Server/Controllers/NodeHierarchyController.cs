@@ -21,23 +21,34 @@ namespace Document_Directory.Server.Controllers
             _context = context;
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         public async Task GetNodeHierarchies() //Отображает внешние папки, т.е. папки и документы, которые не вложены в другие папки
         {
-            int userId = 3;
-            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            
+            string role = this.HttpContext.User.FindFirst("Role").Value;
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _context);
-            List<Nodes> nodes = NodeFunctions.AllNodeAccess(userId, idGroups, _context);
+            List<Nodes> nodes = new List<Nodes>();
+
+            if (role == "Администратор")
+            {
+                nodes = NodeFunctions.AllNodes(_context);
+            }
+
+            else
+            {
+                nodes = NodeFunctions.AllNodeAccess(userId, idGroups, _context);
+            }
 
             List<int> nodesId = new List<int>();
-            foreach (NodeHierarchy folder in _context.NodeHierarchy) 
+            foreach (NodeHierarchy folder in _context.NodeHierarchy)
             {
                 nodesId.Add(folder.NodeId);
             }
             List<Nodes> exFolders = (from Node in _context.Nodes where !nodesId.Contains(Node.Id) select Node).ToList();
-           
+
             List<Nodes> exFoldersTemp = NodeFunctions.NodeAccessFolder(exFolders, nodes);
 
             var response = this.Response;
@@ -45,12 +56,11 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(exFoldersTemp);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("{idFolder}")]
         public async Task GetNodeHierarchy(int idFolder) //Принимает в качестве параметра id папки и отображает все вложенные в эту папку элементы
         {
-            //int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
-            int userId = 3;
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _context);
             List<Nodes> nodes = NodeFunctions.AllNodeAccess(userId, idGroups, _context);
