@@ -41,7 +41,7 @@ function AccessManagePage() {
         {
             title: 'Название',
             dataIndex: 'name',
-            sorter: true,
+            sorter: (a, b) => a.name.length - b.name.length,
             width: '50%',
         },
         {

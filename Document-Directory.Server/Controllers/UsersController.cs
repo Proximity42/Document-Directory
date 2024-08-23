@@ -136,11 +136,22 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(currentUser);
         }
 
-        [HttpGet("inNode")]
-        async public Task GetInNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
+        [HttpGet("with-access-to-node/{nodeId}")]
+        async public Task GetUsersWithAccessToNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
         {
             var usersId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
-            var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id)).ToList();
+            var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
+            var groups = _dbContext.UserGroups.Where(g => groupsId.Contains(g.Id)).ToList();
+
+            foreach (var group in groups)
+            {
+                if (!usersId.Contains(group.UserId))
+                {
+                    usersId.Add(group.UserId);
+                }
+            }
+            
+            var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id) && u.roleId != 1).ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
@@ -148,8 +159,8 @@ namespace Document_Directory.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("notAdmin")]
-        async public Task GetExceptAdmins() //Получение всех пользователей, кроме авторизованного и администраторов
+        [HttpGet("no-access-to-node/{nodeId}")]
+        async public Task GetUsersWithoutAccessToNode() //Получение всех пользователей, кроме авторизованного и администраторов
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
             var users = _dbContext.Users.Include(u => u.role).Where(u => u.roleId != 1 && u.Id != userId).ToList();

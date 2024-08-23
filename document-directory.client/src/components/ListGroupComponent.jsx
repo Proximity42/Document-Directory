@@ -36,7 +36,7 @@ function ListGroupComponent() {
         getPartisipantsAndOtherUser(item.id);
         setItem(item);
 
-        setTimeout(setIsShowModalParticipants(true), 3000);
+        setIsShowModalParticipants(true);
     }
 
     function showModalCreate() {
@@ -245,6 +245,10 @@ function ListGroupComponent() {
     useEffect(() => {
         getListGroup();
     }, [])
+
+    useEffect(() => {
+        setIsShowModalParticipants(true);
+    }, targetKeys)
 
 
     return (
