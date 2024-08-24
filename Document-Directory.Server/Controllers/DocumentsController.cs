@@ -73,10 +73,11 @@ namespace Document_Directory.Server.Controllers
 
         }
 
-        [HttpPatch]
-        async public Task Update(DocumentToUpdate document) //Обновление информации о документе
+        [Authorize]
+        [HttpPatch("{id}")]
+        async public Task Update(int id, DocumentToUpdate document) //Обновление информации о документе
         {
-            var DocumentsToUpdate = _dbContext.Nodes.FirstOrDefault(x => x.Id == document.Id);
+            var DocumentsToUpdate = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
             DocumentsToUpdate.Name = document.Name;
             DocumentsToUpdate.Content = document.Content;
             DocumentsToUpdate.ActivityEnd = document.ActivityEnd;
@@ -89,6 +90,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(DocumentsToUpdate);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление узла по его Id
         {

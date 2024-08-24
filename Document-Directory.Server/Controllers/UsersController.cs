@@ -49,12 +49,12 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(userToUpdate);
         }
 
-        [HttpPatch("PasswordChange")]
+        [HttpPatch("password-change")]
         async public Task ChangePassword(UserToChangePassword user) //Изменение пароля
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
             string password = HashFunctions.GenerationHashPassword(user.Password);
-            
+
             userToUpdate.Password = password;
 
             _dbContext.Users.Update(userToUpdate);
@@ -66,7 +66,7 @@ namespace Document_Directory.Server.Controllers
         }
 
         [Authorize]
-        [HttpPatch("PasswordChangeAuthorized")]
+        [HttpPatch("password-change-authorized")]
         async public Task ChangePassword() //Изменение пароля
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
@@ -91,21 +91,21 @@ namespace Document_Directory.Server.Controllers
             _dbContext.SaveChanges();
 
             var response = this.Response;
-            response.StatusCode=200;
+            response.StatusCode = 200;
             await response.WriteAsJsonAsync(id);
         }
 
-        [HttpGet("groupsuser")]
+        [HttpGet("user-groups")]
         async public Task GetGroupsUser(int idUser) //Получение списка групп пользователя по его Id
         {
-            List<Groups> groups = UserFunctions.UserGroups(idUser, _dbContext).Item1; 
+            List<Groups> groups = UserFunctions.UserGroups(idUser, _dbContext).Item1;
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(groups);
         }
 
         [Authorize]
-        [HttpGet("groupsuserAuthorize")]
+        [HttpGet("all-user-groups")]
         async public Task GetGroupsUser() //Получение списка групп пользователя по его Id
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
@@ -126,7 +126,7 @@ namespace Document_Directory.Server.Controllers
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(users);
         }
-        
+
         [HttpGet]
         async public Task Get(int userId) //Получение информации пользователя по его идентификатору
         {
@@ -136,8 +136,9 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(currentUser);
         }
 
-        [HttpGet("inNode")]
-        async public Task GetInNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
+        [Authorize]
+        [HttpGet("with-access-to-node/{nodeId}")]
+        async public Task GetUsersWithAccessToNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
         {
             var usersId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
             var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id)).ToList();
@@ -148,8 +149,8 @@ namespace Document_Directory.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("notAdmin")]
-        async public Task GetExceptAdmins() //Получение всех пользователей, кроме авторизованного и администраторов
+        [HttpGet("no-access-to-node/{nodeId}")]
+        async public Task GetUsersWithoutAccessToNode(int nodeId) //Получение всех пользователей, кроме авторизованного и администраторов
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
             var users = _dbContext.Users.Include(u => u.role).Where(u => u.roleId != 1 && u.Id != userId).ToList();

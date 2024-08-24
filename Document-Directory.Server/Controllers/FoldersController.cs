@@ -45,10 +45,10 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(folders);
         }
 
-        [HttpPatch]
-        async public Task Rename(DocumentToUpdate folder) //Обновление информации о папке
+        [HttpPatch("{id}")]
+        async public Task Rename(int id, DocumentToUpdate folder) //Обновление информации о папке
         {
-            var FoldersToUpdate = _dbContext.Nodes.FirstOrDefault(x => x.Id == folder.Id);
+            var FoldersToUpdate = _dbContext.Nodes.FirstOrDefault(x => x.Id == id);
 
             FoldersToUpdate.Name = folder.Name;
 
@@ -89,7 +89,6 @@ namespace Document_Directory.Server.Controllers
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
             List<Nodes> folders = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
-
 
             var response = this.Response;
             response.StatusCode = 200;

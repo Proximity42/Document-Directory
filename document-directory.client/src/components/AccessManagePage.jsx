@@ -6,13 +6,37 @@ import {Transfer, Button, Typography, Table} from 'antd';
 function AccessManagePage() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [availableNodes, setAvailableNodes] = useState([]);
+    const [usersWithoutAdmins, setUsersWithoutAdmins] = useState([]);
+    const [usersWithAccess, setUsersWithAccess] = useState([]);
 
     function handleClick() {
         setIsModalVisible(true);
     }
 
+    async function getUsersExcludeSelfAndAdmins() {
+        const response = await fetch("https://localhost:7018/api/users/exclude-self-and-admins", {
+            credentials: 'include',
+        });
+        if (response.status == 200)
+        {
+            const json = await resonse.json();
+            setUsersWithoutAdmins(json);
+        }
+    }
+
+    async function getUsersWithAccess() {
+        const response = await fetch("https://localhost:7018/api/users/access-to-node", {
+            credentials: 'include',
+        });
+        if (response.status == 200)
+        {
+            const json = await resonse.json();
+            setUsersWithAccess(json);
+        }
+    }
+
     async function getAvailableNodes() {
-        const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
+        const response = await fetch("https://localhost:7018/api/folders/access", {
             credentials: 'include',
         });
         if (response.status == 200)
@@ -31,24 +55,22 @@ function AccessManagePage() {
                 }
             });
         }
-        availableNodes.includes
     }
 
-    function getUsers() {
-
-    }
+    
 
     const columns = [
         {
             title: 'Название',
             dataIndex: 'name',
-            sorter: true,
+            sorter: (a, b) => a.name.length - b.name.length,
             width: '50%',
         },
         {
             title: 'Тип',
             dataIndex: 'type',
-            render: (type) => type == "Directory" ? "Директория" : "Документ",
+            // render: (type) => type == "Directory" ? "Директория" : "Документ",
+            onFilter: (value, record) => record.type == value,
             filters: [
                 {
                     text: 'Документ',
@@ -82,6 +104,8 @@ function AccessManagePage() {
 
     useEffect(() => {
         getAvailableNodes();
+        getUsersExcludeSelfAndAdmins();
+        getUsersWithAccess();
     }, [])
 
     return (
@@ -92,10 +116,10 @@ function AccessManagePage() {
                         <div>
                             <h3>Выберите пользователей, которым хотите предоставить доступ</h3>
                             <Transfer
-                                dataSource={availableNodes}
+                                // dataSource={availableNodes}
                                 titles={['С доступом', 'Без доступа']}
-                                targetKeys={availableNodes}
-                                selectedKeys={[]}
+                                targetKeys={usersWithAccess}
+                                selectedKeys={usersWithoutAdmins}
                                 render={(node) => node.name}
                                 locale={
                                     {

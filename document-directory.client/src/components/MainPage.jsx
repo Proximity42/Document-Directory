@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover } from 'antd';
-import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined } from '@ant-design/icons';
+import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined, EditFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc); 
@@ -15,10 +15,13 @@ function MainPageComponent() {
     const [isShowInfoChosenDirectory, setIsShowInfoChosenDirectory] = useState(false);
     const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
     const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
-    const [chosenNode, setChosenNode] = useState({})
-    const [viewMethod, setViewMethod] = useState('table')
+    const [isDocumentEditFormVisible, setIsDocumentEditFormVisible] = useState(false);
+    const [isDirectoryEditFormVisible, setIsDirectoryEditFormVisible] = useState(false);
+    const [chosenNode, setChosenNode] = useState({});
+    const [viewMethod, setViewMethod] = useState('table');
     const [directoryHierarchy, setDirectoryHierarchy] = useState([]);
     const [dateFilterValue, setDateFilterValue] = useState(1);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     let documentFilterValue;
 
     async function searchDocumentByName(value, _e, info) {
@@ -81,7 +84,7 @@ function MainPageComponent() {
                 name: name,
                 content: content,
                 activityEnd: activityDate,
-                folderId: directoryHierarchy[directoryHierarchy.length-1].id
+                folderId: directoryHierarchy.length !== 0 ? [directoryHierarchy.length - 1].id : 0
             })
         });
         if (response.status == 201)
@@ -94,8 +97,62 @@ function MainPageComponent() {
         }
     }
 
+    async function editDocument() {
+        const name = document.querySelector('#inputEditDocumentName').value;
+        const inputActivityDate = document.querySelector('#inputEditDocumentActivityDate').value;
+        const activityDate = dayjs.utc(inputActivityDate, 'DD-MM-YYYY').format();
+        const content = document.querySelector('#inputEditDocumentContent').value;
+        const response = await fetch('https://localhost:7018/api/documents/' + chosenNode.id, {
+            method: 'PATCH', 
+            headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
+            body: JSON.stringify({
+                name: name,
+                content: content,
+                activityEnd: activityDate,
+            })
+        });
+        if (response.status == 200)
+        {
+            const json = await response.json();
+            const activityEnd = dayjs(json.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+            const createdAt = dayjs(json.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+            const editableDocument = {...json, activityEnd: activityEnd, createdAt: createdAt};
+            setAvailableNodes(availableNodes.map((document) => document.id == editableDocument.id ? editableDocument : document));
+            setIsDocumentEditFormVisible(false);
+        }
+    }
+
+    async function editDirectory() {
+        const name = document.querySelector('#inputEditDirectoryName').value;
+        const response = await fetch('https://localhost:7018/api/folders/' + chosenNode.id, {
+            method: 'PATCH', 
+            headers: new Headers({ "Content-Type": "application/json" }), 
+            credentials: 'include',
+            body: JSON.stringify({
+                name: name,
+            })
+        });
+        if (response.status == 200)
+        {
+            const json = await response.json();
+            const activityEnd = dayjs(json.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
+            const createdAt = dayjs(json.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
+            const editableDirectory = {...json, activityEnd: activityEnd, createdAt: createdAt};
+            setAvailableNodes(availableNodes.map((directory) => document.id == editableDirectory.id ? editableDirectory : directory));
+            setIsDirectoryEditFormVisible(false);
+        }
+    }
+
     async function deleteChosenNode() {
-        const response = await fetch(`https://localhost:7018/api/documents/${chosenNode.id}`, {
+        let url = 'https://localhost:7018/api/'; 
+        if (chosenNode.type == "Document") {
+            url += 'documents';
+        } else {
+            url += 'folders';
+        }
+        url += '/' + chosenNode.id;
+        const response = await fetch(url, {
             method: 'DELETE',
             headers: new Headers({"Content-Type": "application/json"}),
             credentials: 'include',
@@ -180,6 +237,24 @@ function MainPageComponent() {
         
     }
 
+    async function editNode(node) {
+        if (node != undefined)
+        {
+            setChosenNode(node);
+            if (node.type == "Document") {
+                setIsDocumentEditFormVisible(true);
+            } else {
+                setIsDirectoryEditFormVisible(true);
+            }
+        } else {
+            if (chosenNode.type == "Document") {
+                setIsDocumentEditFormVisible(true);
+            } else {
+                setIsDirectoryEditFormVisible(true);
+            }
+        }
+    }
+
     async function getAvailableNodes() {
         const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
             credentials: 'include',
@@ -240,11 +315,15 @@ function MainPageComponent() {
         }
     }
 
+    // function onSelectRow(newSelectedRowKeys) {
+    //     setSelectedRowKeys(newSelectedRowKeys);
+    // }
+
     const columns = [
         {
             title: 'Название',
             dataIndex: 'name',
-            sorter: true,
+            sorter: (a, b) => a.name.length - b.name.length,
             width: '60%',
         },
         {
@@ -275,9 +354,19 @@ function MainPageComponent() {
         },
         {
             width: '10%',
-            render: () => <a>Редактировать</a>
+            render: (_, record) => <a onClick={() => editNode(record)}>Редактировать</a>
         } 
     ];
+
+    // const rowSelection = {
+    //     selectedRowKeys,
+    //     onChange: onSelectRow,
+    //     selections: [
+    //         Table.SELECTION_ALL,
+    //         Table.SELECTION_INVERT,
+    //         Table.SELECTION_NONE,
+    //     ]
+    // };
 
     
     // const onChangeViewMethod = (value) => {
@@ -310,6 +399,17 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
+            {isDirectoryEditFormVisible && (
+                <div className='modal'>
+                    <div className='modalContent'>
+                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                            <Input placeholder='Введите название папки' id='inputEditDirectoryName' style={{width: '70%'}} defaultValue={chosenNode.name}/>
+                            <CloseOutlined onClick={() => setIsDirectoryEditFormVisible(false)}/>
+                        </div>
+                        <Button size='small' onClick={editDirectory} style={{width: "100px"}}>Сохранить</Button>
+                    </div>
+                </div>
+            )}
             {isDocumentCreateFormVisible && (
                 <div className='modal'>
                     <div className='modalContent'>
@@ -330,6 +430,30 @@ function MainPageComponent() {
                             id="inputDocumentContent"
                         />
                         <Button size='small' onClick={createDocument} style={{width: "100px"}}>Сохранить</Button>
+                    </div>
+                </div>
+            )}
+            {isDocumentEditFormVisible && (
+                <div className='modal'>
+                    <div className='modalContent'>
+                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                            <Input placeholder='Название документа' id='inputEditDocumentName' style={{width: '70%'}} defaultValue={chosenNode.name}/>
+                            <CloseOutlined onClick={() => setIsDocumentEditFormVisible(false)}/>
+                        </div>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                            <p>Дата окончания действия документа</p>
+                            <DatePicker id="inputEditDocumentActivityDate" format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft' minDate={dayjs()} defaultValue={dayjs(chosenNode.activityEnd, 'DD-MM-YYYY')}/>
+                        </div>
+                        <TextArea
+                            placeholder="Введите содержимое документа"
+                            autoSize={{
+                                minRows: 6,
+                                maxRows: 10
+                            }}
+                            id="inputEditDocumentContent"
+                            defaultValue={chosenNode.content}
+                        />
+                        <Button size='small' onClick={editDocument} style={{width: "100px"}}>Сохранить</Button>
                     </div>
                 </div>
             )}
@@ -399,8 +523,13 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                     <Popover content={<p style={{fontSize: '14px'}}>Удалить выбранный элемент</p>}>
-                        <button onClick={() => deleteChosenNode()} className="btnWithIcon">
+                        <button onClick={deleteChosenNode} className="btnWithIcon">
                             <DeleteFilled style={{fontSize: '30px'}}/>
+                        </button>
+                    </Popover>
+                    <Popover content={<p style={{fontSize: '14px'}}>Редактировать</p>}>
+                        <button onClick={editNode} className="btnWithIcon">
+                            <EditFilled style={{fontSize: '30px'}}/>
                         </button>
                     </Popover>
                 </div>
