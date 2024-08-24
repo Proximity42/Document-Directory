@@ -141,7 +141,18 @@ namespace Document_Directory.Server.Controllers
         async public Task GetUsersWithAccessToNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
         {
             var usersId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
-            var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id)).ToList();
+            var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
+            var groups = _dbContext.UserGroups.Where(g => groupsId.Contains(g.Id)).ToList();
+
+            foreach (var group in groups)
+            {
+                if (!usersId.Contains(group.UserId))
+                {
+                    usersId.Add(group.UserId);
+                }
+            }
+            
+            var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id) && u.roleId != 1).ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
@@ -160,7 +171,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
-
+        
         /*[Authorize]
         [HttpGet]
         async public Task Get() //Получение информации пользователя по его идентификатору
