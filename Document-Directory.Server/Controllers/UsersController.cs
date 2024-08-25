@@ -67,20 +67,30 @@ namespace Document_Directory.Server.Controllers
 
         [Authorize]
         [HttpPatch("password-change-authorized")]
-        async public Task ChangePassword() //Изменение пароля
+        async public Task ChangePassword(Password password) //Изменение пароля
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
             Users user = _dbContext.Users.Find(userId);
-            string password = HashFunctions.GenerationHashPassword(user.Password);
+            string oldPassword = HashFunctions.GenerationHashPassword(password.oldPassword);
+            if (oldPassword == user.Password)
+            {
+                user.Password = HashFunctions.GenerationHashPassword(password.newPassword);
+                _dbContext.Users.Update(user);
+                _dbContext.SaveChanges();
 
-            user.Password = password;
+                var response = this.Response;
+                response.StatusCode = 200;
+                await response.WriteAsJsonAsync(user);
+            }
+            else
+            {
+                var response = this.Response;
+                response.StatusCode = 400;
+                await response.WriteAsJsonAsync(user);
+            }
+            
 
-            _dbContext.Users.Update(user);
-            _dbContext.SaveChanges();
-
-            var response = this.Response;
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(user);
+            
         }
 
         [HttpDelete("{id}")]
@@ -171,17 +181,18 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
-        
-        /*[Authorize]
-        [HttpGet]
-        async public Task Get() //Получение информации пользователя по его идентификатору
+
+        [Authorize]
+        [HttpGet("current-user")]
+        async public Task GetCurrentUser() //Получение информации пользователя по его идентификатору
         {
+            //int userId = 1;
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            Users currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            Users currentUser = _dbContext.Users.Include(u=> u.role).FirstOrDefault(u => u.Id == userId);
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(currentUser);
-        }*/
+        }
     }
 }

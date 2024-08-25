@@ -6,7 +6,7 @@ import Authorization from './components/Authorization';
 import AdminPage from './components/AdminPage';
 import AccessManagePage from './components/AccessManagePage';
 import ProtectedRoute from './components/ProtectedRoute';
-
+import Profile from './components/Profile';
 
 function App() {
 
@@ -26,7 +26,8 @@ function App() {
                             <Route path="/" element={ <ProtectedRoute><MainPage /></ProtectedRoute> } />
                             <Route path="/login" element={ <Authorization />} />
                             <Route path="/admin" element={ <ProtectedRoute><AdminPage /></ProtectedRoute>} />
-                            <Route path="/access" element={ <ProtectedRoute><AccessManagePage/></ProtectedRoute> }/>
+                            <Route path="/access" element={<ProtectedRoute><AccessManagePage /></ProtectedRoute>} />
+                            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                         </Routes>
                     </div>
                 </main>
