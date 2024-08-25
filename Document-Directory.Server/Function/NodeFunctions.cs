@@ -14,12 +14,14 @@ namespace Document_Directory.Server.Function
 
         public static List<Nodes> AllNodeAccess(int? idUser, List<int?> idGroups, AppDBContext _dbContext) //Получение всех доступных узлов пользователю
         {
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             List<NodeAccess> nodeAccesses = (from Node in _dbContext.NodeAccess where idGroups.Contains(Node.GroupId) || (Node.UserId == idUser) select Node).ToList();
             List<Nodes> nodes = new List<Nodes>();
             foreach (var nodeAccess in nodeAccesses)
             {
-                Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId);
-                nodes.Add(node);
+                Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId && (n.ActivityEnd == null || n.ActivityEnd > utcNow));
+                if (node != null) nodes.Add(node);
+                //nodes.Add(node);
             }
 
             return nodes;
