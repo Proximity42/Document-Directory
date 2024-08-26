@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { message, Button, List, Select, Modal, Input, Form } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import Cookie from 'js-cookie';
 
 function UserList() {
     const [list, setList] = useState([]);
@@ -15,7 +16,7 @@ function UserList() {
     const [roles, setRoles] = useState([]);
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
-    
+
     
 
     const showModalDelete = (item) => {
@@ -49,6 +50,10 @@ function UserList() {
                 content: 'Пользователь удален',
             });
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
         setIsModalOpenDelete(false);
     };
 
@@ -66,6 +71,10 @@ function UserList() {
                 type: 'success',
                 content: 'Пароль изменен',
             });
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
         setIsModalOpenChangePassword(false);
     };
@@ -93,6 +102,10 @@ function UserList() {
             });
             
             setIsModalOpenCreate(false);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
         
         
@@ -125,6 +138,10 @@ function UserList() {
                 content: 'Роль пользователя изменена',
             });
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     };
 
     async function getAllUsers() {
@@ -134,7 +151,10 @@ function UserList() {
         })
         const json = await response.json();
         setList(json);
-        
+        if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     
@@ -146,6 +166,10 @@ function UserList() {
         })
         const json = await response.json();
         setRoles(json);
+        if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     

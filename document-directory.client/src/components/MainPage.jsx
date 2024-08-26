@@ -3,6 +3,8 @@ import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover, Modal 
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined, EditFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 dayjs.extend(utc); 
 const { Search } = Input;
 const { TextArea } = Input;
@@ -24,6 +26,8 @@ function MainPageComponent() {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [confirmLoadingDeleteModal, setConfirmLoadingDeleteModal] = useState(false);
+    const navigate = useNavigate();
+
     let documentFilterValue;
 
     async function searchDocumentByName(value, _e, info) {
@@ -44,6 +48,10 @@ function MainPageComponent() {
                     const createdAt = dayjs(document.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
                     setAvailableNodes((prevNodes) => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
                 })
+            }
+            else if (response.status == 401) {
+                navigate('/login');
+                Cookie.remove('test')
             }
         } else {
             await getAvailableNodes();
@@ -69,6 +77,10 @@ function MainPageComponent() {
             const createdAt = dayjs(json.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY')
             setAvailableNodes([...availableNodes, {...json, createdAt: createdAt}]);
             setIsDirectoryCreateFormVisible(false);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -97,6 +109,10 @@ function MainPageComponent() {
             setAvailableNodes([...availableNodes, {...json, activityEnd: activityEnd, createdAt: createdAt}]);
             setIsDocumentCreateFormVisible(false);
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function editDocument() {
@@ -124,6 +140,10 @@ function MainPageComponent() {
             setIsDocumentEditFormVisible(false);
             setChosenNode(editableDocument);
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function editDirectory() {
@@ -145,6 +165,10 @@ function MainPageComponent() {
             setAvailableNodes(availableNodes.map((node) => node.id == editableDirectory.id ? editableDirectory : node));
             setIsDirectoryEditFormVisible(false);
             setChosenNode(editableDirectory);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -168,6 +192,10 @@ function MainPageComponent() {
             setIsShowInfoChosenDirectory(false);
             setIsShowInfoChosenDocument(false);
             setOpenDeleteModal(false)
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -198,6 +226,10 @@ function MainPageComponent() {
             });
             setIsShowInfoChosenDirectory(false);
             setIsShowInfoChosenDocument(false); 
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
         return response.status;
     }
@@ -286,6 +318,10 @@ function MainPageComponent() {
                 }
             });
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function filterByDate()
@@ -321,6 +357,10 @@ function MainPageComponent() {
                     const createdAt = dayjs(document.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
                     setAvailableNodes(prevNodes => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
                 })
+            }
+            else if (response.status == 401) {
+                navigate('/login');
+                Cookie.remove('test')
             }
         }
     }
