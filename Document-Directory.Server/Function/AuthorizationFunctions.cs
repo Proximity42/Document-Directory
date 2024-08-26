@@ -3,6 +3,8 @@ using Document_Directory.Server.ModelsDB;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace Document_Directory.Server.Function
 {
@@ -20,7 +22,7 @@ namespace Document_Directory.Server.Function
                     issuer: AuthOptions.ISSUER,
                     audience: AuthOptions.AUDIENCE,
                     claims: claimsIdentity.Claims,
-                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(20)), // время действия 20 минут
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(1)), // время действия 20 минут
                     signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
@@ -44,6 +46,13 @@ namespace Document_Directory.Server.Function
 
             // если пользователя не найдено
             return null;
+        }
+
+        static public string GenerationHashPassword(string password)
+        {
+            byte[] messageBytes = Encoding.UTF8.GetBytes(password);
+            byte[] hashValue = SHA256.HashData(messageBytes);
+            return Convert.ToHexString(hashValue);
         }
     }
 }

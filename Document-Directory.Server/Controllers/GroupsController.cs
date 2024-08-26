@@ -56,6 +56,28 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(_dbContext.Groups);
         }
 
+        [HttpGet("all-participants")]
+        public async Task GetAllParticipants()
+        {
+            var groups = _dbContext.UserGroups.Include(ug => ug.User).Include(ug => ug.Group).GroupBy(ug => ug.GroupId).ToList();
+            List<int> participantsId = new List<int>();
+
+            foreach (var group in groups)
+            {
+                participantsId.AddRange(group.Select(g => g.UserId));
+                participantsId.Add(0);
+            }
+
+            if (participantsId.Count > 0 && participantsId.Last() == 0)
+            {
+                participantsId.RemoveAt(participantsId.Count - 1);
+            }
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(participantsId);
+        }
+
         [HttpGet("{groupId}")]
         public async Task GetGroupParticipants(int groupId) //Получение списка участников группы по его Id
         {
@@ -81,11 +103,22 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
-        [HttpGet("inNode")]
-        async public Task GetInNode(int nodeId) //Получение всех групп, имеющих доступ к узлу
+        [HttpGet("with-access-to-node/{nodeId}")]
+        async public Task GetGroupsWithAccessToNode(int nodeId) //Получение всех групп, имеющих доступ к узлу
         {
             var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
             var groups = _dbContext.Groups.Where(g => groupsId.Contains(g.Id)).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(groups);
+        }
+
+        [HttpGet("no-access-to-node/{nodeId}")]
+        async public Task GetGroupsWithoutAccessToNode(int nodeId) //Получение всех групп, не имеющих доступ к узлу
+        {
+            var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
+            var groups = _dbContext.Groups.Where(g => !groupsId.Contains(g.Id)).ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
