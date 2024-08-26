@@ -24,6 +24,10 @@ function Profile() {
             const json = await response.json();
             setUser(json);
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     function showModalParticipants(group) {
@@ -53,6 +57,10 @@ function Profile() {
             const json = await response.json();
             setGroups(json);
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function getParticipantsGroup(id) {
@@ -64,6 +72,10 @@ function Profile() {
         if (response.status == 200) {
             const json = await response.json();
             setParticipants(json)
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -113,6 +125,10 @@ function Profile() {
                     type: 'error',
                     content: "Пароль введен неверно",
                 })
+            }
+            else if (response.status == 401) {
+                navigate('/login');
+                Cookie.remove('test')
             }
             else if (response.status == 200) {
                 messageApi.open({

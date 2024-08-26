@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 import {Button, Table, Select} from 'antd';
-
 
 function AccessManagePage() {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -28,6 +29,10 @@ function AccessManagePage() {
             const json = await resonse.json();
             setUsersWithoutAdmins(json);
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function getUsersWithAccess(node) {
@@ -38,6 +43,10 @@ function AccessManagePage() {
         {
             const json = await response.json();
             setUsersWithAccess(json);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -60,6 +69,10 @@ function AccessManagePage() {
                     setAvailableNodes(prevNodes => [...prevNodes, {...node, createdAt: createdAt}]);
                 }
             });
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 

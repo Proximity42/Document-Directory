@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { List, Modal, Button, Input, message, Transfer, Form } from 'antd';
 import { UsergroupAddOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 function ListGroupComponent() {
 
     const [listGroup, setListGroup] = useState([]);
@@ -21,6 +23,7 @@ function ListGroupComponent() {
 
     const [messageApi, contextHolder] = message.useMessage();
 
+    const navigate = useNavigate();
 
     function showModalRename(item) {
         setItem(item);
@@ -66,6 +69,10 @@ function ListGroupComponent() {
             const json = await response.json();
             setOtherUser(json)
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
         let number = otherUser.length
         for (let i = 0; i < number; i++) {
             const data = {
@@ -105,6 +112,10 @@ function ListGroupComponent() {
             const json = await response1.json();
             setParticipantsGroup(json)
         }
+        else if (response1.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
         const response2 = await fetch('https://localhost:7018/api/users/all', {
             headers: new Headers({ "Content-Type": "application/json" }),
         })
@@ -112,6 +123,10 @@ function ListGroupComponent() {
             const json = await response2.json();
         
             setOtherUser(json);
+        }
+        else if (response2.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
 
         let arr = []
@@ -165,6 +180,10 @@ function ListGroupComponent() {
             });
             setIsShowModalParticipants(false)
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function handleOkRename(item) {
@@ -190,6 +209,10 @@ function ListGroupComponent() {
             });
             setIsShowModalRename(false);
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function handleOkDelete(item) {
@@ -208,6 +231,10 @@ function ListGroupComponent() {
                 content: 'Группа удалена',
             });
             setIsShowModalDelete(false);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -230,6 +257,10 @@ function ListGroupComponent() {
             
             setIsShowModalCreate(false)
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
     async function getListGroup() {
         const response = await fetch('https://localhost:7018/api/groups/all', {
@@ -239,6 +270,10 @@ function ListGroupComponent() {
             
             const json = await response.json();
             setListGroup(json);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
