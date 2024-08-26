@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { List, Modal, Button, Input, message, Transfer, Form } from 'antd';
+import { List, Modal, Button, Input, message, Form, Transfer } from 'antd';
 import { UsergroupAddOutlined } from '@ant-design/icons';
+
+
 function ListGroupComponent() {
 
     const [listGroup, setListGroup] = useState([]);
@@ -21,11 +23,14 @@ function ListGroupComponent() {
 
     const [messageApi, contextHolder] = message.useMessage();
 
+ 
 
     function showModalRename(item) {
         setItem(item);
         setIsShowModalRename(true)
     }
+
+    
 
     function showModalDelete(item) {
         setItem(item);
@@ -35,8 +40,10 @@ function ListGroupComponent() {
     function showModalParticipants(item) {
         getPartisipantsAndOtherUser(item.id);
         setItem(item);
-
         setIsShowModalParticipants(true);
+        
+        
+        //setTitle('Проверка');
     }
 
     function showModalCreate() {
@@ -50,10 +57,6 @@ function ListGroupComponent() {
         setIsShowModalParticipants(false);
         setIsShowModalCreate(false);
     };
-
-    function equalsUser(user1, user2) {
-        return user1.id === user2.id
-    }
 
     async function getAll() {
         let tempTargetKeys = [];
@@ -77,6 +80,7 @@ function ListGroupComponent() {
             tempMockData.push(data);
         }
         setMockDataCreate(tempMockData);
+        setMockData(tempMockData);
     }
     async function getPartisipantsAndOtherUser(groupId) {
 
@@ -105,14 +109,14 @@ function ListGroupComponent() {
             const json = await response1.json();
             setParticipantsGroup(json)
         }
-        const response2 = await fetch('https://localhost:7018/api/users/all', {
+        /*const response2 = await fetch('https://localhost:7018/api/users/all', {
             headers: new Headers({ "Content-Type": "application/json" }),
         })
         if (response2.status == 200) {
             const json = await response2.json();
         
             setOtherUser(json);
-        }
+        }*/
 
         let arr = []
         let noUser = []
@@ -244,11 +248,10 @@ function ListGroupComponent() {
 
     useEffect(() => {
         getListGroup();
+        getAll();
     }, [])
 
-    useEffect(() => {
-        setIsShowModalParticipants(true);
-    }, targetKeys)
+    
 
 
     return (
@@ -262,7 +265,7 @@ function ListGroupComponent() {
                 renderItem={(item) => (
                     <List.Item style={{ marginLeft: '10px', textAlign: 'left', fontSize: '20px' }}
                         actions={[<a onClick={() => showModalRename(item)}>Переименовать</a>, <a onClick={() => showModalDelete(item)}>Удалить</a>,
-                        <a onClick={() => showModalParticipants(item)}>Отредактировать состав</a>]}
+                            <a onClick={() => showModalParticipants(item)}>Отредактировать состав</a>]}
                     >{item.name}
                     </List.Item >
                 )}
@@ -277,15 +280,18 @@ function ListGroupComponent() {
             ]}>
                 
             </Modal>
+            
             <Modal title='Редактирование участников группы' open={isShowModalParticipants} onOk={() => handleOkParticipants()} onCancel={() => handleCancel()} footer={[
                 <Button onClick={() => handleCancel()}>Отменить</Button>, <Button onClick={() => handleOkParticipants(item)}>Сохранить</Button>
             ]}>
+                
                 <Transfer showSearch
-                    listStyle={{ width: "1000px", textAlign: 'left' }}
-                    locale={{itemUnit: '', itemsUnit: ''} }
-                    titles={["Остальные участники", "Участники группы"] }
                     dataSource={mockData}
                     targetKeys={targetKeys}
+                    listStyle={{ width: "1000px", textAlign: 'left' }}
+                    locale={{ itemUnit: '', itemsUnit: '' }}
+                    titles={["Остальные пользователи", "Участники группы"]}
+
                     onChange={handleChange}
                     render={(item) => item.title}
                 />
