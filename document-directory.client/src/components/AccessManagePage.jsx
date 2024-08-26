@@ -9,8 +9,13 @@ function AccessManagePage() {
     const [usersWithoutAccess, setUsersWithoutAdmins] = useState([]);
     const [usersWithAccess, setUsersWithAccess] = useState([]);
     const [groupsWithAccess, setGroupsWithAccess] = useState([]);
+    const [options, setOptions] = useState([]);
 
-    function handleClick() {
+    async function editAccess(node) {
+        await getUsersWithAccess(node);
+        let optionsLocal = usersWithAccess.map((user) => {return {title: user.login, value: user}});
+        console.log(optionsLocal);
+        setOptions(optionsLocal);
         setIsModalVisible(true);
     }
 
@@ -25,19 +30,19 @@ function AccessManagePage() {
         }
     }
 
-    async function getUsersWithAccess() {
-        const response = await fetch("https://localhost:7018/api/users/access-to-node", {
+    async function getUsersWithAccess(node) {
+        const response = await fetch(`https://localhost:7018/api/users/with-access-to-node/${node.id}`, {
             credentials: 'include',
         });
         if (response.status == 200)
         {
-            const json = await resonse.json();
+            const json = await response.json();
             setUsersWithAccess(json);
         }
     }
 
     async function getAvailableNodes() {
-        const response = await fetch("https://localhost:7018/api/folders/access", {
+        const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
             credentials: 'include',
         });
         if (response.status == 200)
@@ -57,8 +62,6 @@ function AccessManagePage() {
             });
         }
     }
-
-    
 
     const columns = [
         {
@@ -97,16 +100,16 @@ function AccessManagePage() {
         {
             title: 'Действие',
             width: '20%',
-            render: () => (
-                <a onClick={handleClick}>Управление доступом</a>
+            render: (_, record) => (
+                <a onClick={() => editAccess(record)}>Управление доступом</a>
             )
         } 
     ];
 
     useEffect(() => {
         getAvailableNodes();
-        getUsersExcludeSelfAndAdmins();
-        getUsersWithAccess();
+        // getUsersExcludeSelfAndAdmins();
+        // getUsersWithAccess();
     }, [])
 
     return (
@@ -142,12 +145,12 @@ function AccessManagePage() {
                                     width: '100%',
                                 }}
                                 placeholder="Выберите пользователей"
-                                defaultValue={['a10', 'c12']}
-                                onChange={handleChange}
+                                defaultValue={usersWithAccess}
+                                // onChange={handleChange}
                                 options={options}
                             />
                             <br />
-                            <h3>Группы, пользователей, обладающие доступом</h3>
+                            <h3>Группы, обладающие доступом</h3>
                             {/* <Transfer
                                 dataSource={availableNodes}
                                 titles={['С доступом', 'Без доступа']}
