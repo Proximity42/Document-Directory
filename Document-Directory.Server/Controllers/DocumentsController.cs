@@ -121,11 +121,19 @@ namespace Document_Directory.Server.Controllers
 
             (List<Groups> groupsUser, List<int?> idGroups) = UserFunctions.UserGroups(userId, _dbContext);
             List<Nodes> documents = NodeFunctions.AllNodeAccess(userId, idGroups, _dbContext);
-            
 
             var response = this.Response;
             response.StatusCode=200;
             await response.WriteAsJsonAsync(documents.OrderBy(n=>n.Type).Where(n => n.Type == "Document"));
+        }
+
+        [HttpGet("expired")]
+        async public Task GetExpired() //Получение списка всех документов с истекшим сроком действия
+        {
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(_dbContext.Nodes.OrderBy(n => n.Type).Where(n => n.Type == "Document" && n.ActivityEnd < utcNow));
         }
 
         [HttpGet("{id}")]

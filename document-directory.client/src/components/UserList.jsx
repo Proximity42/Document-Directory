@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { message, Button, List, Select, Modal, Input, Form } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 
 function UserList() {
     const [list, setList] = useState([]);
@@ -194,7 +195,7 @@ function UserList() {
             <Modal title="Введите новый пароль" open={isModalOpenChangePassword} onOk={() => handleOkChange()} onCancel={() => handleCancel()} footer={[
                 <Button onClick={() => handleCancel()}>Отменить</Button>, <Button onClick={() => handleOkChange(item)}>Изменить пароль</Button>
             ]}>
-                <Input id='newPassword'/>
+                <Input.Password id='newPassword' iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)} />
             </Modal>
             <Modal title="Создание пользователя" open={isModalOpenCreate} onOk={() => handleOkCreate()} onCancel={() => handleCancel()} footer={[
                 <Button onClick={() => handleCancel()}>Отменить</Button>, <Button onClick={() => handleOkCreate()}>Создать</Button>
@@ -226,7 +227,7 @@ function UserList() {
                                 message: 'Введите пароль',
                             },
                         ]}>
-                        <Input id='Password'/>
+                        <Input.Password id='Password' iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)} />
                     </Form.Item>
                     <Form.Item
                         label="Роль:"

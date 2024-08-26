@@ -31,4 +31,9 @@
         public string Login { get; set; }
         public string Password { get; set; }
     }
+    public class Password
+    {
+        public string oldPassword { get; set; }
+        public string newPassword { get; set; }
+    }
 }
