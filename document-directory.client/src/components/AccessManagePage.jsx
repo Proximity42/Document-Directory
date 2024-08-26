@@ -1,13 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import dayjs from 'dayjs';
-import {Transfer, Button, Typography, Table} from 'antd';
+import {Button, Table, Select} from 'antd';
 
 
 function AccessManagePage() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [availableNodes, setAvailableNodes] = useState([]);
-    const [usersWithoutAdmins, setUsersWithoutAdmins] = useState([]);
+    const [usersWithoutAccess, setUsersWithoutAdmins] = useState([]);
     const [usersWithAccess, setUsersWithAccess] = useState([]);
+    const [groupsWithAccess, setGroupsWithAccess] = useState([]);
 
     function handleClick() {
         setIsModalVisible(true);
@@ -114,8 +115,8 @@ function AccessManagePage() {
                 <div className='modal'>
                     <div className='modalContent'>
                         <div>
-                            <h3>Выберите пользователей, которым хотите предоставить доступ</h3>
-                            <Transfer
+                            <h3>Пользователи, обладающие доступом</h3>
+                            {/* <Transfer
                                 // dataSource={availableNodes}
                                 titles={['С доступом', 'Без доступа']}
                                 targetKeys={usersWithAccess}
@@ -133,10 +134,21 @@ function AccessManagePage() {
                                     height: '300px',
                                     textAlign: 'left'
                                 }}
+                            /> */}
+                            <Select
+                                mode="multiple"
+                                allowClear
+                                style={{
+                                    width: '100%',
+                                }}
+                                placeholder="Выберите пользователей"
+                                defaultValue={['a10', 'c12']}
+                                onChange={handleChange}
+                                options={options}
                             />
                             <br />
-                            <h3>Выберите группы пользователей, которым хотите предоставить доступ</h3>
-                            <Transfer
+                            <h3>Группы, пользователей, обладающие доступом</h3>
+                            {/* <Transfer
                                 dataSource={availableNodes}
                                 titles={['С доступом', 'Без доступа']}
                                 targetKeys={availableNodes}
@@ -154,7 +166,7 @@ function AccessManagePage() {
                                     height: '300px',
                                     textAlign: 'left'
                                 }}
-                            />
+                            /> */}
                             <div style={{display: 'flex', justifyContent: 'space-around'}}>
                                 <Button size='small' onClick={() => setIsModalVisible(false)} style={{width: "100px", marginTop: '10px'}}>Сохранить</Button>
                                 <Button size='small' onClick={() => setIsModalVisible(false)} style={{width: "100px", marginTop: '10px'}}>Отменить</Button>

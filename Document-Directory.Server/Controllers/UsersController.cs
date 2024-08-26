@@ -2,7 +2,6 @@
 using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +18,7 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
 
+        [Authorize]
         [HttpPost]
         async public Task Create(UserToCreate user) //Создание пользователя
         {
@@ -35,6 +35,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
+        [Authorize]
         [HttpPatch("RoleChange")]
         async public Task ChangeRole(UserToChangeRole user) //Обновление информации о пользователе
         {
@@ -49,6 +50,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(userToUpdate);
         }
 
+        [Authorize]
         [HttpPatch("password-change")]
         async public Task ChangePassword(UserToChangePassword user) //Изменение пароля
         {
@@ -83,6 +85,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(user);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление пользователя
         {
@@ -95,6 +98,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(id);
         }
 
+        [Authorize]
         [HttpGet("user-groups")]
         async public Task GetGroupsUser(int idUser) //Получение списка групп пользователя по его Id
         {
@@ -116,6 +120,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(groups);
         }
 
+        [Authorize]
         [HttpGet("all")]
         async public Task GetAll() //Получение списка всех пользователей 
         {
@@ -127,6 +132,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
+        [Authorize]
         [HttpGet]
         async public Task Get(int userId) //Получение информации пользователя по его идентификатору
         {
