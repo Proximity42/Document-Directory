@@ -2,7 +2,6 @@
 using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,10 +18,11 @@ namespace Document_Directory.Server.Controllers
             _dbContext = dbContext;
         }
 
+        [Authorize]
         [HttpPost]
         async public Task Create(UserToCreate user) //Создание пользователя
         {
-            string password = HashFunctions.GenerationHashPassword(user.Password);
+            string password = AuthorizationFunctions.GenerationHashPassword(user.Password);
             Users users = new Users(user.Login, password);
             users.role = (from role in _dbContext.Role where role.Id == user.RoleId select role).First();
 
@@ -35,7 +35,8 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
-        [HttpPatch("rolechange")]
+        [Authorize]
+        [HttpPatch("RoleChange")]
         async public Task ChangeRole(UserToChangeRole user) //Обновление информации о пользователе
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
@@ -49,11 +50,12 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(userToUpdate);
         }
 
+        [Authorize]
         [HttpPatch("password-change")]
         async public Task ChangePassword(UserToChangePassword user) //Изменение пароля
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id == user.Id);
-            string password = HashFunctions.GenerationHashPassword(user.Password);
+            string password = AuthorizationFunctions.GenerationHashPassword(user.Password);
 
             userToUpdate.Password = password;
 
@@ -71,10 +73,10 @@ namespace Document_Directory.Server.Controllers
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
             Users user = _dbContext.Users.Find(userId);
-            string oldPassword = HashFunctions.GenerationHashPassword(password.oldPassword);
+            string oldPassword = AuthorizationFunctions.GenerationHashPassword(password.oldPassword);
             if (oldPassword == user.Password)
             {
-                user.Password = HashFunctions.GenerationHashPassword(password.newPassword);
+                user.Password = AuthorizationFunctions.GenerationHashPassword(password.newPassword);
                 _dbContext.Users.Update(user);
                 _dbContext.SaveChanges();
 
@@ -93,6 +95,7 @@ namespace Document_Directory.Server.Controllers
 
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         async public Task Delete(int id) //Удаление пользователя
         {
@@ -105,6 +108,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(id);
         }
 
+        [Authorize]
         [HttpGet("user-groups")]
         async public Task GetGroupsUser(int idUser) //Получение списка групп пользователя по его Id
         {
@@ -126,6 +130,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(groups);
         }
 
+        [Authorize]
         [HttpGet("all")]
         async public Task GetAll() //Получение списка всех пользователей 
         {
@@ -137,6 +142,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
+        [Authorize]
         [HttpGet]
         async public Task Get(int userId) //Получение информации пользователя по его идентификатору
         {
@@ -150,19 +156,13 @@ namespace Document_Directory.Server.Controllers
         [HttpGet("with-access-to-node/{nodeId}")]
         async public Task GetUsersWithAccessToNode(int nodeId) //Получение всех пользователей, имеющих доступ к узлу
         {
-            var usersId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
-            var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
-            var groups = _dbContext.UserGroups.Where(g => groupsId.Contains(g.Id)).ToList();
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            foreach (var group in groups)
-            {
-                if (!usersId.Contains(group.UserId))
-                {
-                    usersId.Add(group.UserId);
-                }
-            }
-
-            var users = _dbContext.Users.Include(u => u.role).Where(u => usersId.Contains(u.Id) && u.roleId != 1).ToList();
+            var usersWithDirectAccess = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
+            var groupsWithAccess = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
+            var usersInGroupsWithAccess = _dbContext.UserGroups.Where(ug => groupsWithAccess.Contains(ug.GroupId)).Select(ug => ug.UserId).ToList();
+            var usersWithAccess = usersWithDirectAccess.Union(usersInGroupsWithAccess).Where(u => u != userId).ToList();
+            var users = _dbContext.Users.Where(u => usersWithAccess.Contains(u.Id) && u.roleId != 1 && u.Id != userId).Include(u => u.role).ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
@@ -171,14 +171,20 @@ namespace Document_Directory.Server.Controllers
 
         [Authorize]
         [HttpGet("no-access-to-node/{nodeId}")]
-        async public Task GetUsersWithoutAccessToNode(int nodeId) //Получение всех пользователей, кроме авторизованного и администраторов
+        async public Task GetUsersWithoutAccessToNode(int nodeId) //Получение всех пользователей, не имеющих доступ к узлу
         {
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
-            var users = _dbContext.Users.Include(u => u.role).Where(u => u.roleId != 1 && u.Id != userId).ToList();
+
+            var allUserIds = _dbContext.Users.Where(u => u.roleId != 1 && u.Id != userId).Select(u => u.Id).ToList();
+            var usersWithDirectAccess = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.UserId.HasValue).Select(n => n.UserId.Value).ToList();
+            var groupsWithAccess = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
+            var usersInGroupsWithAccess = _dbContext.UserGroups.Where(ug => groupsWithAccess.Contains(ug.GroupId)).Select(ug => ug.UserId).ToList();
+            var usersWithAccess = usersWithDirectAccess.Union(usersInGroupsWithAccess).ToList();
+            var usersWithoutAccess = _dbContext.Users.Where(u => !usersWithAccess.Contains(u.Id) && u.roleId != 1 && u.Id != userId).Include(u => u.role).ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
-            await response.WriteAsJsonAsync(users);
+            await response.WriteAsJsonAsync(usersWithoutAccess);
         }
 
 

@@ -6,9 +6,10 @@ namespace Document_Directory.Server.Function
 {
     public class NodeFunctions
     {
-        public static List<Nodes> AllNodes(AppDBContext _dbContext)
+        public static List<Nodes> AllNodes(AppDBContext _dbContext) //Вывод всех документов с не истекшим сроком действия и папок
         {
-            List<Nodes> nodes = new List<Nodes>(_dbContext.Nodes.OrderBy(n => n.Type));
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+            List<Nodes> nodes = new List<Nodes>(_dbContext.Nodes.OrderBy(n => n.Type).Where(n => n.ActivityEnd == null || n.ActivityEnd > utcNow));
             return nodes;
         }
 

@@ -1,8 +1,10 @@
 import {useEffect, useState} from 'react';
-import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover } from 'antd';
+import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover, Modal } from 'antd';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined, EditFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 dayjs.extend(utc); 
 const { Search } = Input;
 const { TextArea } = Input;
@@ -22,6 +24,10 @@ function MainPageComponent() {
     const [directoryHierarchy, setDirectoryHierarchy] = useState([]);
     const [dateFilterValue, setDateFilterValue] = useState(1);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [confirmLoadingDeleteModal, setConfirmLoadingDeleteModal] = useState(false);
+    const navigate = useNavigate();
+
     let documentFilterValue;
 
     async function searchDocumentByName(value, _e, info) {
@@ -42,6 +48,10 @@ function MainPageComponent() {
                     const createdAt = dayjs(document.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
                     setAvailableNodes((prevNodes) => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
                 })
+            }
+            else if (response.status == 401) {
+                navigate('/login');
+                Cookie.remove('test')
             }
         } else {
             await getAvailableNodes();
@@ -67,6 +77,10 @@ function MainPageComponent() {
             const createdAt = dayjs(json.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY')
             setAvailableNodes([...availableNodes, {...json, createdAt: createdAt}]);
             setIsDirectoryCreateFormVisible(false);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -95,6 +109,10 @@ function MainPageComponent() {
             setAvailableNodes([...availableNodes, {...json, activityEnd: activityEnd, createdAt: createdAt}]);
             setIsDocumentCreateFormVisible(false);
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function editDocument() {
@@ -120,6 +138,11 @@ function MainPageComponent() {
             const editableDocument = {...json, activityEnd: activityEnd, createdAt: createdAt};
             setAvailableNodes(availableNodes.map((document) => document.id == editableDocument.id ? editableDocument : document));
             setIsDocumentEditFormVisible(false);
+            setChosenNode(editableDocument);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -139,8 +162,13 @@ function MainPageComponent() {
             const activityEnd = dayjs(json.activityEnd, 'YYYY-MM-DD').format('DD-MM-YYYY');
             const createdAt = dayjs(json.createdAt, 'YYYY-MM-DD').format('DD-MM-YYYY');
             const editableDirectory = {...json, activityEnd: activityEnd, createdAt: createdAt};
-            setAvailableNodes(availableNodes.map((directory) => document.id == editableDirectory.id ? editableDirectory : directory));
+            setAvailableNodes(availableNodes.map((node) => node.id == editableDirectory.id ? editableDirectory : node));
             setIsDirectoryEditFormVisible(false);
+            setChosenNode(editableDirectory);
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
     }
 
@@ -163,7 +191,17 @@ function MainPageComponent() {
             setChosenNode({});
             setIsShowInfoChosenDirectory(false);
             setIsShowInfoChosenDocument(false);
+            setOpenDeleteModal(false)
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
+    }
+
+    async function deleteNode(node) {
+        setChosenNode(node);
+        deleteChosenNode();
     }
 
     async function viewDirectoryContent(directory) {
@@ -188,6 +226,10 @@ function MainPageComponent() {
             });
             setIsShowInfoChosenDirectory(false);
             setIsShowInfoChosenDocument(false); 
+        }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
         }
         return response.status;
     }
@@ -276,6 +318,10 @@ function MainPageComponent() {
                 }
             });
         }
+        else if (response.status == 401) {
+            navigate('/login');
+            Cookie.remove('test')
+        }
     }
 
     async function filterByDate()
@@ -312,6 +358,10 @@ function MainPageComponent() {
                     setAvailableNodes(prevNodes => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
                 })
             }
+            else if (response.status == 401) {
+                navigate('/login');
+                Cookie.remove('test')
+            }
         }
     }
 
@@ -324,7 +374,7 @@ function MainPageComponent() {
             title: 'Название',
             dataIndex: 'name',
             sorter: (a, b) => a.name.length - b.name.length,
-            width: '60%',
+            width: '50%',
         },
         {
             title: 'Тип',
@@ -355,7 +405,11 @@ function MainPageComponent() {
         {
             width: '10%',
             render: (_, record) => <a onClick={() => editNode(record)}>Редактировать</a>
-        } 
+        },
+        {
+            width: '10%',
+            render: (_, record) => <a onClick={() => {setChosenNode(record); setOpenDeleteModal(true)}}>Удалить</a>
+        }
     ];
 
     // const rowSelection = {
@@ -478,6 +532,15 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
+            <Modal 
+                title={"Подтверждение удаления"}
+                open={openDeleteModal}
+                onOk={deleteChosenNode}
+                confirmLoading={confirmLoadingDeleteModal}
+                onCancel={() => setOpenDeleteModal(false)}
+            >
+                <p>{`Вы действительно хотите удалить ${chosenNode.type == "Document" ? "документ" : "папку"} ${chosenNode.name}`}</p>
+            </Modal>
             <div>
                 <Search
                     placeholder="Введите название документа"
@@ -507,7 +570,7 @@ function MainPageComponent() {
                         </div>
                     </div>
                     <Button onClick={filterByDate}>Применить</Button>
-                    <CloseOutlined onClick={() => {getAvailableNodes();}}/>
+                    <CloseOutlined onClick={getAvailableNodes}/>
                 </div>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '5px'}}>
@@ -523,12 +586,12 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                     <Popover content={<p style={{fontSize: '14px'}}>Удалить выбранный элемент</p>}>
-                        <button onClick={deleteChosenNode} className="btnWithIcon">
+                        <button onClick={() => setOpenDeleteModal(true)} className="btnWithIcon">
                             <DeleteFilled style={{fontSize: '30px'}}/>
                         </button>
                     </Popover>
                     <Popover content={<p style={{fontSize: '14px'}}>Редактировать</p>}>
-                        <button onClick={editNode} className="btnWithIcon">
+                        <button onClick={() => editNode()} className="btnWithIcon">
                             <EditFilled style={{fontSize: '30px'}}/>
                         </button>
                     </Popover>
