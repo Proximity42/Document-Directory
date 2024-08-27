@@ -58,7 +58,7 @@ function UserList() {
     };
 
     async function handleOkChange() {
-        const response = await fetch('https://localhost:7018/api/users/PasswordChange', {
+        const response = await fetch('https://localhost:7018/api/users/password-change', {
             method: 'PATCH',
             headers: new Headers({ "Content-Type": "application/json" }),
             body: JSON.stringify({

@@ -90,9 +90,9 @@ namespace Document_Directory.Server.Controllers
                 response.StatusCode = 400;
                 await response.WriteAsJsonAsync(user);
             }
-            
 
-            
+
+
         }
 
         [Authorize]
@@ -185,10 +185,31 @@ namespace Document_Directory.Server.Controllers
             //int userId = 1;
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
-            Users currentUser = _dbContext.Users.Include(u=> u.role).FirstOrDefault(u => u.Id == userId);
+            Users currentUser = _dbContext.Users.Include(u => u.role).FirstOrDefault(u => u.Id == userId);
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(currentUser);
+        }
+
+        [Authorize]
+        [HttpGet("check-admin")]
+        async public Task CheckAdmin()
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            Users currentUser = _dbContext.Users.Include(u => u.role).FirstOrDefault(u => u.Id == userId);
+            if (currentUser.role.UserRole == "Администратор")
+            {
+                var response = this.Response;
+                response.StatusCode = 200;
+                await response.WriteAsJsonAsync(currentUser);
+
+            }
+            else
+            {
+                var response = this.Response;
+                response.StatusCode = 403;
+                await response.WriteAsJsonAsync(currentUser);
+            }
         }
     }
 }
