@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Document_Directory.Server.Function;
 
 namespace Document_Directory.Server.Controllers
 {
@@ -56,6 +58,29 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(_dbContext.Groups);
         }
 
+        //[Authorize]
+        //[HttpGet("user")]
+        //async public Task GetGroupsUser() //Получение списка групп пользователя по его Id
+        //{
+
+        //    List<Groups> groups = UserFunctions.UserGroups(idUser, _dbContext).Item1;
+        //    var response = this.Response;
+        //    response.StatusCode = 200;
+        //    await response.WriteAsJsonAsync(groups);
+        //}
+
+        [Authorize]
+        [HttpGet("user")]
+        async public Task GetUserGroups() //Получение списка групп пользователя по его Id
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+
+            List<Groups> groups = UserFunctions.UserGroups(userId, _dbContext).Item1;
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(groups);
+        }
+
         [HttpGet("all-participants")]
         public async Task GetAllParticipants()
         {
@@ -103,9 +128,11 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(users);
         }
 
+        [Authorize]
         [HttpGet("with-access-to-node/{nodeId}")]
         async public Task GetGroupsWithAccessToNode(int nodeId) //Получение всех групп, имеющих доступ к узлу
         {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
             var groupsId = _dbContext.NodeAccess.Where(n => n.NodeId == nodeId && n.GroupId.HasValue).Select(n => n.GroupId.Value).ToList();
             var groups = _dbContext.Groups.Where(g => groupsId.Contains(g.Id)).ToList();
 

@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
 import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover, Modal } from 'antd';
-import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined, EditFilled } from '@ant-design/icons';
+import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined, EditFilled, LockFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
+import AccessManagePage from './AccessManagePage';
 dayjs.extend(utc); 
 const { Search } = Input;
 const { TextArea } = Input;
@@ -23,12 +24,10 @@ function MainPageComponent() {
     const [viewMethod, setViewMethod] = useState('table');
     const [directoryHierarchy, setDirectoryHierarchy] = useState([]);
     const [dateFilterValue, setDateFilterValue] = useState(1);
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [confirmLoadingDeleteModal, setConfirmLoadingDeleteModal] = useState(false);
+    const [isAccessManageModalVisible, setIsAccessManageModalVisible] = useState(false);
     const navigate = useNavigate();
-
-    let documentFilterValue;
 
     async function searchDocumentByName(value, _e, info) {
         setAvailableNodes([]);
@@ -267,7 +266,6 @@ function MainPageComponent() {
                 }
             } else {
                 await getAvailableNodes();
-                console.log(hierarchy)
                 setHierarchy((prevHierarchy) => prevHierarchy.substring(0, 1));
                 
                 setDirectoryHierarchy([]);
@@ -365,16 +363,12 @@ function MainPageComponent() {
         }
     }
 
-    // function onSelectRow(newSelectedRowKeys) {
-    //     setSelectedRowKeys(newSelectedRowKeys);
-    // }
-
     const columns = [
         {
             title: 'Название',
             dataIndex: 'name',
             sorter: (a, b) => a.name.length - b.name.length,
-            width: '50%',
+            width: '40%',
         },
         {
             title: 'Тип',
@@ -409,32 +403,12 @@ function MainPageComponent() {
         {
             width: '10%',
             render: (_, record) => <a onClick={() => {setChosenNode(record); setOpenDeleteModal(true)}}>Удалить</a>
+        },
+        {
+            width: '10%',
+            render: (_, record) => <a onClick={() => {setChosenNode(record); setIsAccessManageModalVisible(true)}}>Управление доступом</a>
         }
     ];
-
-    // const rowSelection = {
-    //     selectedRowKeys,
-    //     onChange: onSelectRow,
-    //     selections: [
-    //         Table.SELECTION_ALL,
-    //         Table.SELECTION_INVERT,
-    //         Table.SELECTION_NONE,
-    //     ]
-    // };
-
-    
-    // const onChangeViewMethod = (value) => {
-    //     if (value == "table")
-    //     {
-    //         setIsViewTable(true);
-    //         setIsViewIcons(false);
-            
-    //     }
-    //     else {
-    //         setIsViewIcons(true);
-    //         setIsViewTable(false);
-    //     }
-    // }
 
     useEffect(() => {
         getAvailableNodes();
@@ -453,7 +427,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDirectoryEditFormVisible && (
+            {isDirectoryEditFormVisible && Object.keys(chosenNode).length !== 0 && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -487,7 +461,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentEditFormVisible && (
+            {isDocumentEditFormVisible && Object.keys(chosenNode).length !== 0 && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -511,7 +485,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentViewModalVisible && (
+            {isDocumentViewModalVisible && Object.keys(chosenNode).length !== 0 && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -532,7 +506,12 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            <Modal 
+            {isAccessManageModalVisible && Object.keys(chosenNode).length !== 0 && <AccessManagePage 
+                setIsModalVisible={setIsAccessManageModalVisible} 
+                chosenNode={chosenNode}
+                setChosenNode={setChosenNode}
+            />}
+            {chosenNode && Object.keys(chosenNode).length !== 0 && <Modal 
                 title={"Подтверждение удаления"}
                 open={openDeleteModal}
                 onOk={deleteChosenNode}
@@ -540,7 +519,7 @@ function MainPageComponent() {
                 onCancel={() => setOpenDeleteModal(false)}
             >
                 <p>{`Вы действительно хотите удалить ${chosenNode.type == "Document" ? "документ" : "папку"} ${chosenNode.name}`}</p>
-            </Modal>
+            </Modal>}
             <div>
                 <Search
                     placeholder="Введите название документа"
@@ -586,13 +565,18 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                     <Popover content={<p style={{fontSize: '14px'}}>Удалить выбранный элемент</p>}>
-                        <button onClick={() => setOpenDeleteModal(true)} className="btnWithIcon">
+                        <button onClick={() => {Object.keys(chosenNode).length !== 0 && setOpenDeleteModal(true)}} className="btnWithIcon">
                             <DeleteFilled style={{fontSize: '30px'}}/>
                         </button>
                     </Popover>
                     <Popover content={<p style={{fontSize: '14px'}}>Редактировать</p>}>
-                        <button onClick={() => editNode()} className="btnWithIcon">
+                        <button onClick={() => {Object.keys(chosenNode).length !== 0 && editNode()}} className="btnWithIcon">
                             <EditFilled style={{fontSize: '30px'}}/>
+                        </button>
+                    </Popover>
+                    <Popover content={<p style={{fontSize: '14px'}}>Управление доступом</p>}>
+                        <button onClick={() => {Object.keys(chosenNode).length !== 0 && setIsAccessManageModalVisible(true)}} className="btnWithIcon">
+                            <LockFilled style={{fontSize: '30px'}}/>
                         </button>
                     </Popover>
                 </div>

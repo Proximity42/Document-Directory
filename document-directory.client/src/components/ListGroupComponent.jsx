@@ -3,6 +3,8 @@ import { List, Modal, Button, Input, message, Transfer, Form } from 'antd';
 import { UsergroupAddOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
+
+
 function ListGroupComponent() {
 
     const [listGroup, setListGroup] = useState([]);
@@ -54,10 +56,6 @@ function ListGroupComponent() {
         setIsShowModalCreate(false);
     };
 
-    function equalsUser(user1, user2) {
-        return user1.id === user2.id
-    }
-
     async function getAll() {
         let tempTargetKeys = [];
         let tempMockData = [];
@@ -85,6 +83,7 @@ function ListGroupComponent() {
         }
         setMockDataCreate(tempMockData);
     }
+
     async function getPartisipantsAndOtherUser(groupId) {
 
         let tempTargetKeys = [];
@@ -153,12 +152,12 @@ function ListGroupComponent() {
         }
         setMockData(tempMockData);
         setTargetKeys(tempTargetKeys);
-        
     }
 
     const handleChange = (newTargetKeys) => {
         setTargetKeys(newTargetKeys);
     };
+
     const handleChangeCreate = (newTargetKeys) => {
         setTargetKeysCreate(newTargetKeys)
     }
@@ -283,7 +282,7 @@ function ListGroupComponent() {
 
     useEffect(() => {
         setIsShowModalParticipants(true);
-    }, targetKeys)
+    }, [targetKeys])
 
 
     return (

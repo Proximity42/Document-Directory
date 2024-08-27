@@ -44,11 +44,9 @@ a {
     display: flex;
     flex-direction: column;
     background-color: white;
-    /* align-items: center; */
     padding: 10px;
     border-radius: 5px;
     min-width: 900px;
-    /* text-align: center; */
 }
 
 .availableNode {

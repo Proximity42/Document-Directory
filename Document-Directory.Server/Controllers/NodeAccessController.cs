@@ -1,8 +1,6 @@
 ﻿using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -32,10 +30,10 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(nodeAccess);
         }
 
-        [HttpPatch]
+        [HttpPut]
         async public Task Update(AccessToUpdate accessToUpdate)
         {
-            var dbNodes = _dbContext.NodeAccess.Where(n => n.NodeId == accessToUpdate.Id).ToList();
+            var dbNodes = _dbContext.NodeAccess.Where(n => n.NodeId == accessToUpdate.nodeId).ToList();
 
             foreach (var node in dbNodes)
             {
@@ -55,19 +53,19 @@ namespace Document_Directory.Server.Controllers
 
             foreach (var userId in accessToUpdate.usersId.Where(u => u.HasValue).Select(u => u.Value))
             {
-                var newUserAccess = new NodeAccess(accessToUpdate.Id, null, userId);
+                var newUserAccess = new NodeAccess(accessToUpdate.nodeId, null, userId);
                 _dbContext.NodeAccess.Add(newUserAccess);
             }
 
             foreach (var groupId in accessToUpdate.groupsId.Where(g => g.HasValue).Select(g => g.Value))
             {
-                var newGroupAccess = new NodeAccess(accessToUpdate.Id, groupId, null);
+                var newGroupAccess = new NodeAccess(accessToUpdate.nodeId, groupId, null);
                 _dbContext.NodeAccess.Add(newGroupAccess);
             }
 
             _dbContext.SaveChanges();
 
-            var updatedNodeAccessList = _dbContext.NodeAccess.Where(n => n.NodeId == accessToUpdate.Id).ToList();
+            var updatedNodeAccessList = _dbContext.NodeAccess.Where(n => n.NodeId == accessToUpdate.nodeId).ToList();
 
             var response = this.Response;
             response.StatusCode = 200;
