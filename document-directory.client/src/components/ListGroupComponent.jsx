@@ -64,6 +64,7 @@ function ListGroupComponent() {
 
         const response = await fetch(`https://localhost:7018/api/users/all`, {
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
         })
         if (response.status == 200) {
             const json = await response.json();
@@ -84,7 +85,7 @@ function ListGroupComponent() {
             tempMockData.push(data);
         }
         setMockDataCreate(tempMockData);
-        setMockData(tempMockData);
+        //setMockData(tempMockData);
     }
     async function getPartisipantsAndOtherUser(groupId) {
 
@@ -108,19 +109,21 @@ function ListGroupComponent() {
         
         const response1 = await fetch(`https://localhost:7018/api/groups/${groupId}`, {
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
         })
         if (response1.status == 200) {
             const json = await response1.json();
             setParticipantsGroup(json)
         }
-        /*const response2 = await fetch('https://localhost:7018/api/users/all', {
+        const response2 = await fetch('https://localhost:7018/api/users/all', {
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include'
         })
         if (response2.status == 200) {
             const json = await response2.json();
         
             setOtherUser(json);
-        }*/
+        }
 
         let arr = []
         let noUser = []
@@ -131,8 +134,8 @@ function ListGroupComponent() {
         for (let a of otherUser) {
             if (!arr.includes(a.id)) noUser.push(a) 
         }
-        console.log(arr)
-        console.log(noUser)
+        /*console.log(arr)
+        console.log(noUser)*/
 
         let number = otherUser.length
         for (let i = 0; i < number; i++) {
@@ -173,10 +176,7 @@ function ListGroupComponent() {
             });
             setIsShowModalParticipants(false)
         }
-        else if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
-        }
+        
     }
 
     async function handleOkRename(item) {
@@ -202,10 +202,7 @@ function ListGroupComponent() {
             });
             setIsShowModalRename(false);
         }
-        else if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
-        }
+        
     }
 
     async function handleOkDelete(item) {
@@ -225,10 +222,7 @@ function ListGroupComponent() {
             });
             setIsShowModalDelete(false);
         }
-        else if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
-        }
+        
     }
 
     async function handleOkCreate() {
@@ -250,10 +244,7 @@ function ListGroupComponent() {
             
             setIsShowModalCreate(false)
         }
-        else if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
-        }
+        
     }
     async function getListGroup() {
         const response = await fetch('https://localhost:7018/api/groups/all', {
@@ -264,15 +255,13 @@ function ListGroupComponent() {
             const json = await response.json();
             setListGroup(json);
         }
-        else if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
-        }
+        
     }
 
     useEffect(() => {
         getListGroup();
         getAll();
+        //getPartisipantsAndOtherUser();
     }, [])
 
     
