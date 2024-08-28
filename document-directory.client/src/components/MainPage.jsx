@@ -465,9 +465,12 @@ function MainPageComponent() {
                             <Input placeholder='Название документа' id='inputEditDocumentName' style={{width: '70%'}} defaultValue={chosenNode.name}/>
                             <CloseOutlined onClick={() => setIsDocumentEditFormVisible(false)}/>
                         </div>
-                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                            <p>Дата окончания действия документа</p>
-                            <DatePicker id="inputEditDocumentActivityDate" format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft' minDate={dayjs()} defaultValue={dayjs(chosenNode.activityEnd, 'DD-MM-YYYY')}/>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'space-between'}}>
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                <p>Дата окончания действия документа</p>
+                                <DatePicker id="inputEditDocumentActivityDate" format={{format: 'DD-MM-YYYY'}} placeholder='Выберите дату' placement='bottomLeft' minDate={dayjs.utc()} defaultValue={dayjs(chosenNode.activityEnd, 'DD-MM-YYYY')}/>
+                            </div>
+                            {chosenNode.type == "Document" && dayjs.utc(chosenNode.activityEnd, 'DD-MM-YYYY') < dayjs.utc() && <p style={{color: 'red'}}>Срок действия документа истек</p>}
                         </div>
                         <TextArea
                             placeholder="Введите содержимое документа"
@@ -514,8 +517,10 @@ function MainPageComponent() {
                 onOk={deleteChosenNode}
                 confirmLoading={confirmLoadingDeleteModal}
                 onCancel={() => setOpenDeleteModal(false)}
+                okText="Принять"
+                cancelText="Отменить"
             >
-                <p>{`Вы действительно хотите удалить ${chosenNode.type == "Document" ? "документ" : "папку"} ${chosenNode.name}`}</p>
+                <p>{`Вы действительно хотите удалить ${chosenNode.type == "Document" ? "документ" : "папку"} "${chosenNode.name}"`}</p>
             </Modal>}
             <div>
                 <Search
@@ -531,8 +536,8 @@ function MainPageComponent() {
                     <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                         <p style={{ margin: '0', textAlign: 'left'}}>Фильтрация документов по дате</p>
                         <Radio.Group style={{display: 'flex'}} defaultValue={dateFilterValue}>
-                            <Radio value={1}>создания</Radio>
-                            <Radio value={2}>активности</Radio>
+                            <Radio value={1} onClick={() => setDateFilterValue(1)}>создания</Radio>
+                            <Radio value={2} onClick={() => setDateFilterValue(2)}>активности</Radio>
                         </Radio.Group>
                     </div>
                     <div style={{display: 'flex', gap: '5px'}}>

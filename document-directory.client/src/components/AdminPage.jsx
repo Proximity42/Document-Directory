@@ -1,9 +1,7 @@
-import React, { Component } from 'react';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import React, { Component, useEffect, useState } from 'react';
 import { Divider, Menu, Switch } from 'antd';
 import UserList from './UserList';
+import {useNavigate} from 'react-router-dom';
 import { UserOutlined, TeamOutlined } from '@ant-design/icons';
 
 import ListGroupComponent from './ListGroupComponent';
