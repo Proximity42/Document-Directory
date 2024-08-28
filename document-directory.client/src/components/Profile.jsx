@@ -3,6 +3,8 @@ import { List, Modal, Button, Form, Input, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
+
+
 function Profile() {
     const [user, setUser] = useState({ login: '', role: { id: '', userRole: '' } });
     const [groups, setGroups] = useState([]);
@@ -48,7 +50,7 @@ function Profile() {
 
 
     async function getGroups() {
-        const response = await fetch('https://localhost:7018/api/users/all-user-groups', {
+        const response = await fetch('https://localhost:7018/api/groups/user', {
             method: 'GET',
             credentials: 'include',
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -160,7 +162,7 @@ function Profile() {
             <p> {user.login} - {user.role.userRole}</p>
             <p>Ваши группы:</p>
             <List
-                footer={[<Button onClick={showModalPassword}>Сменить пароль</Button>, <Button onClick={showModalExit}>Выйти из профиля</Button>]}
+                // footer={[<Button onClick={showModalPassword}>Сменить пароль</Button>, <Button onClick={showModalExit}>Выйти из профиля</Button>]}
                 dataSource={groups}
                 renderItem={(item) => (
                     <List.Item
@@ -168,8 +170,12 @@ function Profile() {
                     </List.Item>
 
                 )}
+                style={{width: '80%', margin: 'auto'}}
             />
-
+            <div style={{display: 'flex', gap: '10px', justifyContent: 'center'}}>
+                <Button onClick={showModalPassword}>Сменить пароль</Button>
+                <Button onClick={showModalExit}>Выйти из профиля</Button>
+            </div>
             <Modal title="Участники группы:" open={isShowModalParticipants} onCancel={handleCancel} footer={[
                 <Button onClick={handleCancel}>Назад</Button>
             ]}>
