@@ -49,10 +49,7 @@ function MainPageComponent() {
                     setAvailableNodes((prevNodes) => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
                 })
             }
-            else if (response.status == 401) {
-                navigate('/login');
-                Cookie.remove('test')
-            }
+            
         } else {
             await getAvailableNodes();
         }
