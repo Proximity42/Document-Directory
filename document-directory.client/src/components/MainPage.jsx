@@ -29,6 +29,7 @@ function MainPageComponent() {
     const [isAccessManageModalVisible, setIsAccessManageModalVisible] = useState(false);
     const navigate = useNavigate();
 
+
     async function searchDocumentByName(value, _e, info) {
         setAvailableNodes([]);
         if (value != '') {
@@ -501,9 +502,12 @@ function MainPageComponent() {
                             <p>Дата создания документа</p>
                             <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.createdAt, "DD-MM-YYYY")} style={{color: 'black'}}/>
                         </div>
-                        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                            <p>Дата окончания действия документа</p>
-                            <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
+                        <div style={{display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'space-between'}}>
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                <p>Дата окончания действия документа</p>
+                                <DatePicker disabled format={{format: 'DD-MM-YYYY'}} placement='bottomLeft' defaultValue={dayjs(chosenNode.activityEnd, "DD-MM-YYYY")}/>
+                            </div>
+                            {chosenNode.type == "Document" && dayjs.utc(chosenNode.activityEnd, 'DD-MM-YYYY') < dayjs.utc() && <p style={{color: 'red'}}>Срок действия документа истек</p>}
                         </div>
                         <TextArea disabled defaultValue={chosenNode.content} style={{textWrap: 'wrap', textAlign: 'left', opacity: '1', color: 'black', cursor: 'pointer'}} autoSize={{minRows: 18, maxRows: 20}}/>
                     </div>
@@ -585,11 +589,11 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                 </div>
-                {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%'}}>
+                {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
                     <p>Имя папки: {chosenNode.name}</p>
                     <p>Дата создания: {chosenNode.createdAt}</p>
                 </div>}
-                {isShowInfoChosenDocument && !isShowInfoChosenDirectory && <div style={{fontSize: '14px', maxSize: '40%'}}>
+                {isShowInfoChosenDocument && !isShowInfoChosenDirectory && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
                     <p>Имя документа: {chosenNode.name}</p>
                     <p>Дата создания: {chosenNode.createdAt}</p>
                     <p>Дата активности: {chosenNode.activityEnd}</p>
