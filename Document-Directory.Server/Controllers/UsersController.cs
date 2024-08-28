@@ -108,29 +108,8 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(id);
         }
 
-        [Authorize]
-        [HttpGet("user-groups")]
-        async public Task GetGroupsUser(int idUser) //Получение списка групп пользователя по его Id
-        {
-            List<Groups> groups = UserFunctions.UserGroups(idUser, _dbContext).Item1;
-            var response = this.Response;
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(groups);
-        }
 
-        [Authorize]
-        [HttpGet("all-user-groups")]
-        async public Task GetGroupsUser() //Получение списка групп пользователя по его Id
-        {
-            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
-
-            List<Groups> groups = UserFunctions.UserGroups(userId, _dbContext).Item1;
-            var response = this.Response;
-            response.StatusCode = 200;
-            await response.WriteAsJsonAsync(groups);
-        }
-
-        [Authorize]
+        //[Authorize]
         [HttpGet("all")]
         async public Task GetAll() //Получение списка всех пользователей 
         {
@@ -187,6 +166,17 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(usersWithoutAccess);
         }
 
+        [Authorize]
+        [HttpGet("exclude-admins")]
+        async public Task GetAllUsersExcludeAdmins() //Получение всех пользователей, кроме авторизованного и администраторов
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
+            var users = _dbContext.Users.Include(u => u.role).Where(u => u.roleId != 1 && u.Id != userId).ToList();
+
+            var response = this.Response;
+            response.StatusCode = 200;
+            await response.WriteAsJsonAsync(users);
+        }
 
         [Authorize]
         [HttpGet("current-user")]

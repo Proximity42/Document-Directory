@@ -1,15 +1,10 @@
 import React, { Component } from 'react';
 import { useEffect, useState } from 'react';
-import { BrowserRouter, NavLink } from 'react-router-dom';
-import { useNavigate, Navigate } from 'react-router-dom';
 import { Divider, Menu, Switch } from 'antd';
 import UserList from './UserList';
 import { UserOutlined, TeamOutlined } from '@ant-design/icons';
 
-
 import ListGroupComponent from './ListGroupComponent';
-
-
 
 function AdminPage() {
     const [isShowListUser, setIsShowListUser] = useState(true);

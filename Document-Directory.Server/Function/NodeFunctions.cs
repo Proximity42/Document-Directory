@@ -9,7 +9,7 @@ namespace Document_Directory.Server.Function
         public static List<Nodes> AllNodes(AppDBContext _dbContext) //Вывод всех документов с не истекшим сроком действия и папок
         {
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-            List<Nodes> nodes = new List<Nodes>(_dbContext.Nodes.OrderBy(n => n.Type).Where(n => n.ActivityEnd == null || n.ActivityEnd > utcNow));
+            List<Nodes> nodes = new List<Nodes>(_dbContext.Nodes.OrderBy(n => n.Type));
             return nodes;
         }
 
@@ -20,9 +20,8 @@ namespace Document_Directory.Server.Function
             List<Nodes> nodes = new List<Nodes>();
             foreach (var nodeAccess in nodeAccesses)
             {
-                Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId && (n.ActivityEnd == null || n.ActivityEnd > utcNow));
+                Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId && (n.ActivityEnd == null || n.ActivityEnd > utcNow || n.UserId == idUser));
                 if (node != null) nodes.Add(node);
-                //nodes.Add(node);
             }
 
             return nodes;

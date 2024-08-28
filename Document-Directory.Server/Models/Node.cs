@@ -33,7 +33,7 @@ namespace Document_Directory.Server.Models
 
     public class AccessToUpdate
     {
-        public int Id { get; set; }
+        public int nodeId { get; set; }
         public List<int?> groupsId { get; set; }
         public List<int?> usersId { get; set; }
     }

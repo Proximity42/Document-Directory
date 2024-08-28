@@ -24,7 +24,7 @@ namespace Document_Directory.Server.Controllers
             int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value);
 
             DateTimeOffset timestampWithTimezone = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(0));
-            Nodes folders = new Nodes("Directory", folder.Name, timestampWithTimezone); ;
+            Nodes folders = new Nodes(userId, "Directory", folder.Name, timestampWithTimezone);
 
             _dbContext.Nodes.Add(folders);
             _dbContext.SaveChanges();

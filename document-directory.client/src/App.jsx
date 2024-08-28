@@ -16,7 +16,7 @@ function App() {
                 <nav style={{marginBottom: "30px"}}>
                     <ul style={{display: 'flex', listStyle: 'none', justifyContent: 'space-evenly', marginTop: '0'}}>
                         <li><NavLink to='/'>Главная</NavLink></li>
-                        <li><NavLink to='/access'>Управление доступом</NavLink></li>
+                        {/* <li><NavLink to='/access'>Управление доступом</NavLink></li> */}
                         <li><NavLink to='/profile'>Профиль</NavLink></li>
                     </ul>
                 </nav>
@@ -26,7 +26,7 @@ function App() {
                             <Route path="/" element={ <ProtectedRoute><MainPage /></ProtectedRoute> } />
                             <Route path="/login" element={ <Authorization />} />
                             <Route path="/admin" element={ <ProtectedRoute><AdminPage /></ProtectedRoute>} />
-                            <Route path="/access" element={<ProtectedRoute><AccessManagePage /></ProtectedRoute>} />
+                            {/* <Route path="/access" element={<ProtectedRoute><AccessManagePage /></ProtectedRoute>} /> */}
                             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                         </Routes>
                     </div>

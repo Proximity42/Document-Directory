@@ -87,6 +87,7 @@ function ListGroupComponent() {
         setMockDataCreate(tempMockData);
         //setMockData(tempMockData);
     }
+
     async function getPartisipantsAndOtherUser(groupId) {
 
         let tempTargetKeys = [];
@@ -149,12 +150,12 @@ function ListGroupComponent() {
         }
         setMockData(tempMockData);
         setTargetKeys(tempTargetKeys);
-        
     }
 
     const handleChange = (newTargetKeys) => {
         setTargetKeys(newTargetKeys);
     };
+
     const handleChangeCreate = (newTargetKeys) => {
         setTargetKeysCreate(newTargetKeys)
     }

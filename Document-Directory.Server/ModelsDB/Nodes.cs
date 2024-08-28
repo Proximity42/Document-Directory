@@ -28,7 +28,7 @@ namespace Document_Directory.Server.ModelsDB
             this.CreatedAt = CreatedAt;
             this.ActivityEnd = ActivityEnd;
         }
-        public Nodes(string Type, string Name, string? Content, DateTimeOffset CreatedAt)
+        public Nodes(string Type, string Name, string? Content, DateTimeOffset CreatedAt, DateTimeOffset? ActivityEnd)
         {
             this.Type = Type;
             this.Name = Name;
@@ -37,8 +37,9 @@ namespace Document_Directory.Server.ModelsDB
             this.ActivityEnd = ActivityEnd;
         }
 
-        public Nodes(string Type, string Name, DateTimeOffset CreatedAt) 
+        public Nodes(int? UserId, string Type, string Name, DateTimeOffset CreatedAt) 
         {
+            this.UserId = UserId;
             this.Type = Type;
             this.Name = Name;
             this.CreatedAt = CreatedAt;
