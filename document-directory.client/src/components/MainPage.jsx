@@ -48,10 +48,7 @@ function MainPageComponent() {
                     setAvailableNodes((prevNodes) => [...prevNodes, {...document, activityEnd: activityEnd, createdAt: createdAt}]);
                 })
             }
-            else if (response.status == 401) {
-                navigate('/login');
-                Cookie.remove('test')
-            }
+            
         } else {
             await getAvailableNodes();
         }
@@ -67,7 +64,7 @@ function MainPageComponent() {
             credentials: 'include',
             body: JSON.stringify({
                 name: name,
-                folderId: directoryHierarchy.length !== 0 ? [directoryHierarchy.length - 1].id : 0
+                folderId: directoryHierarchy.length !== 0 ? directoryHierarchy[directoryHierarchy.length - 1].id : 0
             })
         });
         if (response.status == 201)
@@ -97,7 +94,7 @@ function MainPageComponent() {
                 name: name,
                 content: content,
                 activityEnd: activityDate,
-                folderId: directoryHierarchy.length !== 0 ? [directoryHierarchy.length - 1].id : 0
+                folderId: directoryHierarchy.length !== 0 ? directoryHierarchy[directoryHierarchy.length - 1].id : 0
             })
         });
         if (response.status == 201)

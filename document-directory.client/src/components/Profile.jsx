@@ -48,7 +48,7 @@ function Profile() {
 
 
     async function getGroups() {
-        const response = await fetch('https://localhost:7018/api/users/all-user-groups', {
+        const response = await fetch('https://localhost:7018/api/groups/user', {
             method: 'GET',
             credentials: 'include',
             headers: new Headers({ "Content-Type": "application/json" }),

@@ -62,7 +62,7 @@ namespace Document_Directory.Server.Controllers
         //[HttpGet("user")]
         //async public Task GetGroupsUser() //Получение списка групп пользователя по его Id
         //{
-
+        //    int idUser = 
         //    List<Groups> groups = UserFunctions.UserGroups(idUser, _dbContext).Item1;
         //    var response = this.Response;
         //    response.StatusCode = 200;
