@@ -41,6 +41,7 @@ function UserList() {
         const response = await fetch(`https://localhost:7018/api/users/${item.id}`, {
             method: 'DELETE',
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
         });
         if (response.status == 200) {
             const newList = list.filter((itemList) => itemList.id !== item.id);
@@ -61,6 +62,7 @@ function UserList() {
         const response = await fetch('https://localhost:7018/api/users/password-change', {
             method: 'PATCH',
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
             body: JSON.stringify({
                 id: item.id,
                 password: document.querySelector('#newPassword').value,
@@ -127,6 +129,7 @@ function UserList() {
         const response = await fetch('https://localhost:7018/api/users/rolechange', {
             method: 'PATCH',
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
             body: JSON.stringify({
                 id: item.id,
                 roleId: item.roleId,
