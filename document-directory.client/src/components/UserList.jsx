@@ -146,15 +146,13 @@ function UserList() {
 
     async function getAllUsers() {
         const response = await fetch('https://localhost:7018/api/users/all', {
+            credentials: 'include',
             method: 'GET',
             headers: new Headers({ "Content-Type": "application/json" }),
         })
         const json = await response.json();
         setList(json);
-        if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
-        }
+        
     }
 
     
