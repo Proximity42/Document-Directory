@@ -39,6 +39,11 @@ function UserList() {
     };
 
     async function handleOk() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/users/${item.id}`, {
             method: 'DELETE',
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -68,6 +73,11 @@ function UserList() {
             });
         }
         else {
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
+            }
             const response = await fetch('https://localhost:7018/api/users/password-change', {
                 method: 'PATCH',
                 headers: new Headers({ "Content-Type": "application/json" }),
@@ -99,6 +109,11 @@ function UserList() {
 
         }
         else {
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
+            }
             const response = await fetch('https://localhost:7018/api/users', {
                 method: 'POST',
                 credentials: 'include',
@@ -135,6 +150,11 @@ function UserList() {
     async function handleChange(value, item) {
         setItem(item);
         item.roleId = value
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/users/rolechange', {
             method: 'PATCH',
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -158,6 +178,11 @@ function UserList() {
 
     async function getAllUsers() {
         console.log('isExpired is:', isJwtExpired(Cookie.get('test')));
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/users/all', {
             credentials: 'include',
             method: 'GET',
@@ -171,6 +196,11 @@ function UserList() {
     
 
     async function getRoles() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/role/all', {
             method: 'GET',
             headers: new Headers({ "Content-Type": "application/json" }),

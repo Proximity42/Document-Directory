@@ -6,6 +6,8 @@ import utc from 'dayjs/plugin/utc';
 import { useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import AccessManagePage from './AccessManagePage';
+import { isJwtExpired } from 'jwt-check-expiration';
+
 dayjs.extend(utc); 
 const { Search } = Input;
 const { TextArea } = Input;
@@ -34,6 +36,11 @@ function MainPageComponent() {
         setIsShowInfoChosenNode(false);
         setAvailableNodes([]);
         if (value != '') {
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
+            }
             const response = await fetch('https://localhost:7018/api/documents/filterBy', {
                 method: 'POST',
                 headers: new Headers({ "Content-Type": "application/json" }),
@@ -59,7 +66,11 @@ function MainPageComponent() {
 
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
-        
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/folders', {
             method: 'POST', 
             headers: new Headers({ "Content-Type": "application/json" }), 
@@ -88,6 +99,11 @@ function MainPageComponent() {
         const activityDate = dayjs.utc(inputActivityDate, 'DD-MM-YYYY').format();
 
         const content = document.querySelector('#inputDocumentContent').value;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -118,6 +134,11 @@ function MainPageComponent() {
         const inputActivityDate = document.querySelector('#inputEditDocumentActivityDate').value;
         const activityDate = dayjs.utc(inputActivityDate, 'DD-MM-YYYY').format();
         const content = document.querySelector('#inputEditDocumentContent').value;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/documents/' + chosenNode.id, {
             method: 'PATCH', 
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -146,6 +167,11 @@ function MainPageComponent() {
 
     async function editDirectory() {
         const name = document.querySelector('#inputEditDirectoryName').value;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/folders/' + chosenNode.id, {
             method: 'PATCH', 
             headers: new Headers({ "Content-Type": "application/json" }), 
@@ -178,6 +204,11 @@ function MainPageComponent() {
             url += 'folders';
         }
         url += '/' + chosenNode.id;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(url, {
             method: 'DELETE',
             headers: new Headers({"Content-Type": "application/json"}),
@@ -202,6 +233,11 @@ function MainPageComponent() {
     }
 
     async function viewDirectoryContent(directory) {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/NodeHierarchy/${directory.id}`, {
             credentials: 'include',
         });
@@ -292,6 +328,11 @@ function MainPageComponent() {
     }
 
     async function getAvailableNodes() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
             credentials: 'include',
         });
@@ -334,6 +375,11 @@ function MainPageComponent() {
             }
             if (endDate != '') {
                 endDateISO = dayjs.utc(endDate, 'DD-MM-YYYY').format();
+            }
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
             }
             const response = await fetch("https://localhost:7018/api/documents/filterby", {
                 method: 'POST',
