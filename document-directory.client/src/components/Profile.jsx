@@ -3,6 +3,7 @@ import { List, Modal, Button, Form, Input, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
+import { isJwtExpired } from 'jwt-check-expiration';
 
 
 function Profile() {
@@ -17,6 +18,11 @@ function Profile() {
 
     const [messageApi, contextHolder] = message.useMessage();
     async function getUser() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/users/current-user', {
             method: 'GET',
             credentials: 'include',
@@ -50,6 +56,11 @@ function Profile() {
 
 
     async function getGroups() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/groups/user', {
             method: 'GET',
             credentials: 'include',
@@ -66,6 +77,11 @@ function Profile() {
     }
 
     async function getParticipantsGroup(id) {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/groups/${id}`, {
             method: 'GET',
             credentials: 'include',
@@ -109,6 +125,11 @@ function Profile() {
             })
         }
         else {
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
+            }
             const response = await fetch('https://localhost:7018/api/users/password-change-authorized', {
                 method: 'PATCH',
                 credentials: 'include',

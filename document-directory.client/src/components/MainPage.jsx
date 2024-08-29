@@ -6,6 +6,8 @@ import utc from 'dayjs/plugin/utc';
 import { useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import AccessManagePage from './AccessManagePage';
+import { isJwtExpired } from 'jwt-check-expiration';
+
 dayjs.extend(utc); 
 const { Search } = Input;
 const { TextArea } = Input;
@@ -15,8 +17,7 @@ function MainPageComponent() {
     const [hierarchy, setHierarchy] = useState('/');
     const [isDirectoryCreateFormVisible, setIsDirectoryCreateFormVisible] = useState(false);
     const [isDocumentCreateFormVisible, setIsDocumentCreateFormVisible] = useState(false);
-    const [isShowInfoChosenDirectory, setIsShowInfoChosenDirectory] = useState(false);
-    const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
+    const [isShowInfoChosenNode, setIsShowInfoChosenNode] = useState(false);
     const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [isDocumentEditFormVisible, setIsDocumentEditFormVisible] = useState(false);
     const [isDirectoryEditFormVisible, setIsDirectoryEditFormVisible] = useState(false);
@@ -27,12 +28,20 @@ function MainPageComponent() {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [confirmLoadingDeleteModal, setConfirmLoadingDeleteModal] = useState(false);
     const [isAccessManageModalVisible, setIsAccessManageModalVisible] = useState(false);
+    const [isShowMessageErrorAccess, setIsShowMessageErrorAccess] = useState(false);
     const navigate = useNavigate();
 
 
     async function searchDocumentByName(value, _e, info) {
+        setChosenNode({});
+        setIsShowInfoChosenNode(false);
         setAvailableNodes([]);
         if (value != '') {
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
+            }
             const response = await fetch('https://localhost:7018/api/documents/filterBy', {
                 method: 'POST',
                 headers: new Headers({ "Content-Type": "application/json" }),
@@ -58,7 +67,11 @@ function MainPageComponent() {
 
     async function createDirectory() {
         const name = document.querySelector('#inputDirectoryName').value;
-        
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/folders', {
             method: 'POST', 
             headers: new Headers({ "Content-Type": "application/json" }), 
@@ -87,6 +100,11 @@ function MainPageComponent() {
         const activityDate = dayjs.utc(inputActivityDate, 'DD-MM-YYYY').format();
 
         const content = document.querySelector('#inputDocumentContent').value;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/documents', {
             method: 'POST', 
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -117,6 +135,11 @@ function MainPageComponent() {
         const inputActivityDate = document.querySelector('#inputEditDocumentActivityDate').value;
         const activityDate = dayjs.utc(inputActivityDate, 'DD-MM-YYYY').format();
         const content = document.querySelector('#inputEditDocumentContent').value;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/documents/' + chosenNode.id, {
             method: 'PATCH', 
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -145,6 +168,11 @@ function MainPageComponent() {
 
     async function editDirectory() {
         const name = document.querySelector('#inputEditDirectoryName').value;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/folders/' + chosenNode.id, {
             method: 'PATCH', 
             headers: new Headers({ "Content-Type": "application/json" }), 
@@ -177,6 +205,11 @@ function MainPageComponent() {
             url += 'folders';
         }
         url += '/' + chosenNode.id;
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(url, {
             method: 'DELETE',
             headers: new Headers({"Content-Type": "application/json"}),
@@ -186,8 +219,7 @@ function MainPageComponent() {
         {
             setAvailableNodes(availableNodes.filter((node) => node.id != chosenNode.id));
             setChosenNode({});
-            setIsShowInfoChosenDirectory(false);
-            setIsShowInfoChosenDocument(false);
+            setIsShowInfoChosenNode(false);
             setOpenDeleteModal(false)
         }
         else if (response.status == 401) {
@@ -202,6 +234,11 @@ function MainPageComponent() {
     }
 
     async function viewDirectoryContent(directory) {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/NodeHierarchy/${directory.id}`, {
             credentials: 'include',
         });
@@ -221,8 +258,7 @@ function MainPageComponent() {
                     setAvailableNodes(prevNodes => [...prevNodes, {...node, createdAt: createdAt}]);
                 }
             });
-            setIsShowInfoChosenDirectory(false);
-            setIsShowInfoChosenDocument(false); 
+            setIsShowInfoChosenNode(false);
         }
         else if (response.status == 401) {
             navigate('/login');
@@ -269,10 +305,20 @@ function MainPageComponent() {
                 setDirectoryHierarchy([]);
                 setChosenNode({});
             }
-            setIsShowInfoChosenDirectory(false);
-            setIsShowInfoChosenDocument(false);
+            setIsShowInfoChosenNode(false);
         }
         
+    }
+
+    async function isUserHaveAccess(node) {
+        const response = await fetch(`https://localhost:7018/api/nodeaccess/check-access-edit/${node.id}`, {
+            credentials: 'include'
+        });
+        if (response.status == 200) {
+            return true;
+        } else if (response.status == 401) {
+            return false;
+        }
     }
 
     async function editNode(node) {
@@ -294,6 +340,11 @@ function MainPageComponent() {
     }
 
     async function getAvailableNodes() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch("https://localhost:7018/api/NodeHierarchy", {
             credentials: 'include',
         });
@@ -322,6 +373,8 @@ function MainPageComponent() {
 
     async function filterByDate()
     {
+        setChosenNode({});
+        setIsShowInfoChosenNode(false);
         let startDate = document.querySelector("#filterStartDate").value;
         let endDate = document.querySelector("#filterEndDate").value;
         if (startDate != '' || endDate != '')
@@ -334,6 +387,11 @@ function MainPageComponent() {
             }
             if (endDate != '') {
                 endDateISO = dayjs.utc(endDate, 'DD-MM-YYYY').format();
+            }
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
             }
             const response = await fetch("https://localhost:7018/api/documents/filterby", {
                 method: 'POST',
@@ -396,15 +454,15 @@ function MainPageComponent() {
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => editNode(record)}>Редактировать</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? editNode(record) : setIsShowMessageErrorAccess(true)}}>Редактировать</a>
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => {setChosenNode(record); setOpenDeleteModal(true)}}>Удалить</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? setOpenDeleteModal(true) : setIsShowMessageErrorAccess(true)}}>Удалить</a>
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => {setChosenNode(record); setIsAccessManageModalVisible(true)}}>Управление доступом</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? setIsAccessManageModalVisible(true) : setIsShowMessageErrorAccess(true)}}>Управление доступом</a>
         }
     ];
 
@@ -425,7 +483,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDirectoryEditFormVisible && Object.keys(chosenNode).length !== 0 && (
+            {isDirectoryEditFormVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -450,8 +508,8 @@ function MainPageComponent() {
                         <TextArea
                             placeholder="Введите содержимое документа"
                             autoSize={{
-                                minRows: 6,
-                                maxRows: 10
+                                minRows: 8,
+                                maxRows: 14
                             }}
                             id="inputDocumentContent"
                         />
@@ -459,7 +517,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentEditFormVisible && Object.keys(chosenNode).length !== 0 && (
+            {isDocumentEditFormVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -476,8 +534,8 @@ function MainPageComponent() {
                         <TextArea
                             placeholder="Введите содержимое документа"
                             autoSize={{
-                                minRows: 6,
-                                maxRows: 10
+                                minRows: 8,
+                                maxRows: 14
                             }}
                             id="inputEditDocumentContent"
                             defaultValue={chosenNode.content}
@@ -486,7 +544,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentViewModalVisible && Object.keys(chosenNode).length !== 0 && (
+            {isDocumentViewModalVisible && Object.keys(chosenNode).length !== 0 (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -510,12 +568,12 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isAccessManageModalVisible && Object.keys(chosenNode).length !== 0 && <AccessManagePage 
-                setIsModalVisible={setIsAccessManageModalVisible} 
+            {isAccessManageModalVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && <AccessManagePage 
+                setIsModalVisible={setIsAccessManageModalVisible}
                 chosenNode={chosenNode}
                 setChosenNode={setChosenNode}
             />}
-            {chosenNode && Object.keys(chosenNode).length !== 0 && <Modal 
+            {chosenNode && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && <Modal 
                 title={"Подтверждение удаления"}
                 open={openDeleteModal}
                 onOk={deleteChosenNode}
@@ -586,14 +644,15 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                 </div>
-                {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
+                {/* {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
                     <p>Имя папки: {chosenNode.name}</p>
                     <p>Дата создания: {chosenNode.createdAt}</p>
-                </div>}
-                {isShowInfoChosenDocument && !isShowInfoChosenDirectory && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
-                    <p>Имя документа: {chosenNode.name}</p>
+                </div>} */}
+                {isShowInfoChosenNode && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
+                    <p>Имя {chosenNode.type == "Document" ? 'документа' : 'папки'}: {chosenNode.name}</p>
                     <p>Дата создания: {chosenNode.createdAt}</p>
-                    <p>Дата активности: {chosenNode.activityEnd}</p>
+                    {chosenNode.type == "Document" && <p>Дата активности: {chosenNode.activityEnd}</p>}
+                    {chosenNode.type == "Document" && dayjs.utc(chosenNode.activityEnd, 'DD-MM-YYYY') < dayjs.utc() && <p style={{color: 'red'}}>Срок действия документа истек</p>}
                 </div>}
             </div>
             <div style={{display: 'flex', gap: '10px'}}>
@@ -614,12 +673,12 @@ function MainPageComponent() {
                     {availableNodes.map((node, index) => (
                         <div key={index} className='availableNode' style={{maxWidth: '120px'}}>
                             {node.type == "Directory" ? 
-                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDocument(false); setChosenNode(node); setIsShowInfoChosenDirectory(true);}} onDoubleClick={() => viewNextDirectoryContent()}>
+                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenNode(true); setChosenNode(node);}} onDoubleClick={() => viewNextDirectoryContent()}>
                                 <FolderFilled style={{fontSize: '50px'}} />
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p>
                             </button>
                             :
-                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDirectory(false); setChosenNode(node); setIsShowInfoChosenDocument(true);}} onDoubleClick={() => setIsDocumentViewModalVisible(true)}>
+                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenNode(true); setChosenNode(node);}} onDoubleClick={() => setIsDocumentViewModalVisible(true)}>
                                 <FileFilled style={{fontSize: '45px'}}/>
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p> 
                             </button>
@@ -628,7 +687,16 @@ function MainPageComponent() {
                     ))}
                 </Space>
             </div>}
-            {viewMethod == 'table' && <Table dataSource={availableNodes} columns={columns} rowKey={(node) => node.id}/>}
+            {viewMethod == 'table' && <Table 
+                dataSource={availableNodes} 
+                columns={columns} 
+                rowKey={(node) => node.id} 
+                onRow={(record, rowIndex) => {
+                    return {
+                        onClick: (event) => {setChosenNode(record); setIsShowInfoChosenNode(true)},
+                        onDoubleClick: (event) => {record.type == "Directory" ? viewNextDirectoryContent() : setIsDocumentViewModalVisible(true)},
+                }}}
+            />}
         </>
     );
 }

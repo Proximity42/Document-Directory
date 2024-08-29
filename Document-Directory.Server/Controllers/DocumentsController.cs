@@ -51,27 +51,7 @@ namespace Document_Directory.Server.Controllers
             await response.WriteAsJsonAsync(documents);
         }
 
-        [Authorize]
-        [HttpGet("checkaccessedit")]
-        async public Task CheckAccessEdit(int id)
-        {
-            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value); ;
-            Nodes node = _dbContext.Nodes.Find(id);
-            Users user = _dbContext.Users.Find(userId);
-
-            var response = this.Response;
-            if (node.UserId == userId || UserFunctions.GetRoleUser(user.Id, _dbContext) == "Администратор")
-            {
-                response.StatusCode = 200;
-                await response.WriteAsJsonAsync(true);
-            }
-            else
-            {
-                response.StatusCode = 401;
-                await response.WriteAsJsonAsync(false);
-            }
-
-        }
+        
 
         [Authorize]
         [HttpPatch("{id}")]
