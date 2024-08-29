@@ -15,8 +15,7 @@ function MainPageComponent() {
     const [hierarchy, setHierarchy] = useState('/');
     const [isDirectoryCreateFormVisible, setIsDirectoryCreateFormVisible] = useState(false);
     const [isDocumentCreateFormVisible, setIsDocumentCreateFormVisible] = useState(false);
-    const [isShowInfoChosenDirectory, setIsShowInfoChosenDirectory] = useState(false);
-    const [isShowInfoChosenDocument, setIsShowInfoChosenDocument] = useState(false);
+    const [isShowInfoChosenNode, setIsShowInfoChosenNode] = useState(false);
     const [isDocumentViewModalVisible, setIsDocumentViewModalVisible] = useState(false);
     const [isDocumentEditFormVisible, setIsDocumentEditFormVisible] = useState(false);
     const [isDirectoryEditFormVisible, setIsDirectoryEditFormVisible] = useState(false);
@@ -31,6 +30,8 @@ function MainPageComponent() {
 
 
     async function searchDocumentByName(value, _e, info) {
+        setChosenNode({});
+        setIsShowInfoChosenNode(false);
         setAvailableNodes([]);
         if (value != '') {
             const response = await fetch('https://localhost:7018/api/documents/filterBy', {
@@ -186,8 +187,7 @@ function MainPageComponent() {
         {
             setAvailableNodes(availableNodes.filter((node) => node.id != chosenNode.id));
             setChosenNode({});
-            setIsShowInfoChosenDirectory(false);
-            setIsShowInfoChosenDocument(false);
+            setIsShowInfoChosenNode(false);
             setOpenDeleteModal(false)
         }
         else if (response.status == 401) {
@@ -221,8 +221,7 @@ function MainPageComponent() {
                     setAvailableNodes(prevNodes => [...prevNodes, {...node, createdAt: createdAt}]);
                 }
             });
-            setIsShowInfoChosenDirectory(false);
-            setIsShowInfoChosenDocument(false); 
+            setIsShowInfoChosenNode(false);
         }
         else if (response.status == 401) {
             navigate('/login');
@@ -269,8 +268,7 @@ function MainPageComponent() {
                 setDirectoryHierarchy([]);
                 setChosenNode({});
             }
-            setIsShowInfoChosenDirectory(false);
-            setIsShowInfoChosenDocument(false);
+            setIsShowInfoChosenNode(false);
         }
         
     }
@@ -322,6 +320,8 @@ function MainPageComponent() {
 
     async function filterByDate()
     {
+        setChosenNode({});
+        setIsShowInfoChosenNode(false);
         let startDate = document.querySelector("#filterStartDate").value;
         let endDate = document.querySelector("#filterEndDate").value;
         if (startDate != '' || endDate != '')
@@ -450,8 +450,8 @@ function MainPageComponent() {
                         <TextArea
                             placeholder="Введите содержимое документа"
                             autoSize={{
-                                minRows: 6,
-                                maxRows: 10
+                                minRows: 8,
+                                maxRows: 14
                             }}
                             id="inputDocumentContent"
                         />
@@ -476,8 +476,8 @@ function MainPageComponent() {
                         <TextArea
                             placeholder="Введите содержимое документа"
                             autoSize={{
-                                minRows: 6,
-                                maxRows: 10
+                                minRows: 8,
+                                maxRows: 14
                             }}
                             id="inputEditDocumentContent"
                             defaultValue={chosenNode.content}
@@ -586,14 +586,15 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                 </div>
-                {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
+                {/* {isShowInfoChosenDirectory && !isShowInfoChosenDocument && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
                     <p>Имя папки: {chosenNode.name}</p>
                     <p>Дата создания: {chosenNode.createdAt}</p>
-                </div>}
-                {isShowInfoChosenDocument && !isShowInfoChosenDirectory && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
-                    <p>Имя документа: {chosenNode.name}</p>
+                </div>} */}
+                {isShowInfoChosenNode && <div style={{fontSize: '14px', maxSize: '40%', height: '30px'}}>
+                    <p>Имя {chosenNode.type == "Document" ? 'документа' : 'папки'}: {chosenNode.name}</p>
                     <p>Дата создания: {chosenNode.createdAt}</p>
-                    <p>Дата активности: {chosenNode.activityEnd}</p>
+                    {chosenNode.type == "Document" && <p>Дата активности: {chosenNode.activityEnd}</p>}
+                    {chosenNode.type == "Document" && dayjs.utc(chosenNode.activityEnd, 'DD-MM-YYYY') < dayjs.utc() && <p style={{color: 'red'}}>Срок действия документа истек</p>}
                 </div>}
             </div>
             <div style={{display: 'flex', gap: '10px'}}>
@@ -614,12 +615,12 @@ function MainPageComponent() {
                     {availableNodes.map((node, index) => (
                         <div key={index} className='availableNode' style={{maxWidth: '120px'}}>
                             {node.type == "Directory" ? 
-                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDocument(false); setChosenNode(node); setIsShowInfoChosenDirectory(true);}} onDoubleClick={() => viewNextDirectoryContent()}>
+                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenNode(true); setChosenNode(node);}} onDoubleClick={() => viewNextDirectoryContent()}>
                                 <FolderFilled style={{fontSize: '50px'}} />
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p>
                             </button>
                             :
-                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenDirectory(false); setChosenNode(node); setIsShowInfoChosenDocument(true);}} onDoubleClick={() => setIsDocumentViewModalVisible(true)}>
+                            <button className="btnWithIcon" onClick={() => {setIsShowInfoChosenNode(true); setChosenNode(node);}} onDoubleClick={() => setIsDocumentViewModalVisible(true)}>
                                 <FileFilled style={{fontSize: '45px'}}/>
                                 <p style={{width: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{node.name}</p> 
                             </button>
@@ -628,7 +629,16 @@ function MainPageComponent() {
                     ))}
                 </Space>
             </div>}
-            {viewMethod == 'table' && <Table dataSource={availableNodes} columns={columns} rowKey={(node) => node.id}/>}
+            {viewMethod == 'table' && <Table 
+                dataSource={availableNodes} 
+                columns={columns} 
+                rowKey={(node) => node.id} 
+                onRow={(record, rowIndex) => {
+                    return {
+                        onClick: (event) => {setChosenNode(record); setIsShowInfoChosenNode(true)},
+                        onDoubleClick: (event) => {record.type == "Directory" ? viewNextDirectoryContent() : setIsDocumentViewModalVisible(true)},
+                }}}
+            />}
         </>
     );
 }
