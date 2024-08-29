@@ -35,11 +35,13 @@ namespace Document_Directory.Server.Controllers
         [HttpPut]
         async public Task Update(AccessToUpdate accessToUpdate)
         {
+            var authorUserId = _dbContext.Nodes.Where(n => n.Id == accessToUpdate.nodeId).Select(n => n.UserId).FirstOrDefault();
             var dbNodes = _dbContext.NodeAccess.Where(n => n.NodeId == accessToUpdate.nodeId).ToList();
 
             foreach (var node in dbNodes)
             {
-                if (node.UserId.HasValue && !accessToUpdate.usersId.Contains(node.UserId.Value) || node.GroupId.HasValue && !accessToUpdate.groupsId.Contains(node.GroupId.Value))
+                if (node.UserId.HasValue && node.UserId != authorUserId && !accessToUpdate.usersId.Contains(node.UserId.Value) 
+                    || node.GroupId.HasValue && !accessToUpdate.groupsId.Contains(node.GroupId.Value))
                 {
                     _dbContext.NodeAccess.Remove(node);
                 }

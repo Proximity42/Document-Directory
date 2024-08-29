@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import {Button, Table, Select} from 'antd';
+import { isJwtExpired } from 'jwt-check-expiration';
 
 
 function AccessManagePage({setIsModalVisible, chosenNode, setChosenNode}) {
@@ -26,6 +27,11 @@ function AccessManagePage({setIsModalVisible, chosenNode, setChosenNode}) {
         if (selectedGroups[0] !== null && typeof selectedGroups[0] === "object")
         {
             selectedGroupsId = selectedGroups.map((user) => user.value);
+        }
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
         }
         const response = await fetch('https://localhost:7018/api/nodeaccess', {
             method: 'PUT',
@@ -58,6 +64,11 @@ function AccessManagePage({setIsModalVisible, chosenNode, setChosenNode}) {
     }
 
     async function getAllUserGroups() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/groups/user', {
             credentials: 'include',
         });
@@ -73,6 +84,11 @@ function AccessManagePage({setIsModalVisible, chosenNode, setChosenNode}) {
     }
 
     async function getGroupsWithAccess(node) {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/groups/with-access-to-node/${node.id}`, {
             credentials: 'include',
         });
@@ -88,6 +104,11 @@ function AccessManagePage({setIsModalVisible, chosenNode, setChosenNode}) {
     }
 
     async function getAllUsers() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/users/exclude-admins', {
             credentials: 'include',
         });
@@ -103,6 +124,11 @@ function AccessManagePage({setIsModalVisible, chosenNode, setChosenNode}) {
     }
 
     async function getUsersWithAccess(node) {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/users/with-access-to-node/${node.id}`, {
             credentials: 'include',
         });

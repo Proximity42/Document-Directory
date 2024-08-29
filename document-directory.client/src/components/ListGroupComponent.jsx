@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { List, Modal, Button, Input, message, Form, Transfer } from 'antd';
 import { UsergroupAddOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
+import { isJwtExpired } from 'jwt-check-expiration';
 
 
 function ListGroupComponent() {
@@ -22,6 +25,8 @@ function ListGroupComponent() {
     const [targetKeysCreate, setTargetKeysCreate] = useState([]);
 
     const [messageApi, contextHolder] = message.useMessage();
+
+    const navigate = useNavigate();
 
  
 
@@ -61,7 +66,11 @@ function ListGroupComponent() {
     async function getAll() {
         let tempTargetKeys = [];
         let tempMockData = [];
-
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/users/all`, {
             headers: new Headers({ "Content-Type": "application/json" }),
             credentials: 'include',
@@ -107,7 +116,11 @@ function ListGroupComponent() {
         setMockData(tempMockData);
         setTargetKeys(tempTargetKeys);*/
 
-        
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response1 = await fetch(`https://localhost:7018/api/groups/${groupId}`, {
             headers: new Headers({ "Content-Type": "application/json" }),
             credentials: 'include',
@@ -161,7 +174,11 @@ function ListGroupComponent() {
     }
 
     async function handleOkParticipants(item) {
-
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/groups/usergroup', {
             method: 'PATCH',
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -190,6 +207,11 @@ function ListGroupComponent() {
             });
         }
         else {
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
+            }
             const response = await fetch('https://localhost:7018/api/groups', {
                 method: 'PATCH',
                 headers: new Headers({ "Content-Type": "application/json" }),
@@ -217,7 +239,11 @@ function ListGroupComponent() {
 
     async function handleOkDelete(item) {
         setItem(item);
-
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch(`https://localhost:7018/api/groups/${item.id}`, {
             method: 'DELETE',
             headers: new Headers({ "Content-Type": "application/json" }),
@@ -244,6 +270,11 @@ function ListGroupComponent() {
             });
         }
         else {
+            if (isJwtExpired(Cookie.get('test'))) {
+                navigate("/login");
+                Cookie.remove('test');
+                return;
+            }
             const response = await fetch('https://localhost:7018/api/groups', {
                 method: 'POST',
                 headers: new Headers({ "Content-Type": "application/json" }),
@@ -267,6 +298,11 @@ function ListGroupComponent() {
         
     }
     async function getListGroup() {
+        if (isJwtExpired(Cookie.get('test'))) {
+            navigate("/login");
+            Cookie.remove('test');
+            return;
+        }
         const response = await fetch('https://localhost:7018/api/groups/all', {
             headers: new Headers({ "Content-Type": "application/json" }),
         });
