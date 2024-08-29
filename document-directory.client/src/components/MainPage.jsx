@@ -316,7 +316,7 @@ function MainPageComponent() {
         });
         if (response.status == 200) {
             return true;
-        } else if (response.status == 401) {
+        } else if (response.status == 403) {
             return false;
         }
     }
@@ -544,7 +544,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentViewModalVisible && Object.keys(chosenNode).length !== 0 (
+            {isDocumentViewModalVisible && Object.keys(chosenNode).length !== 0 && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>

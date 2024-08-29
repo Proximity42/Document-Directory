@@ -85,14 +85,14 @@ namespace Document_Directory.Server.Controllers
             Users user = _dbContext.Users.Find(userId);
 
             var response = this.Response;
-            if (node.UserId == userId || UserFunctions.GetRoleUser(user.Id, _dbContext) == "Администратор")
+            if (node.UserId == userId || UserFunctions.GetRoleUser(user.roleId, _dbContext) == "Администратор")
             {
                 response.StatusCode = 200;
                 await response.WriteAsJsonAsync(true);
             }
             else
             {
-                response.StatusCode = 401;
+                response.StatusCode = 403;
                 await response.WriteAsJsonAsync(false);
             }
         }
