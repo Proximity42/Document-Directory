@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover, Modal } from 'antd';
+import { Input, Space, Button, DatePicker, Radio, Table, Select, Popover, Modal, message } from 'antd';
 import { FolderFilled, FolderAddFilled, FileAddFilled, FileFilled, CloseOutlined, DeleteFilled, LeftOutlined, EditFilled, LockFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -29,6 +29,7 @@ function MainPageComponent() {
     const [confirmLoadingDeleteModal, setConfirmLoadingDeleteModal] = useState(false);
     const [isAccessManageModalVisible, setIsAccessManageModalVisible] = useState(false);
     const [isShowMessageErrorAccess, setIsShowMessageErrorAccess] = useState(false);
+    const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
 
 
@@ -229,8 +230,15 @@ function MainPageComponent() {
     }
 
     async function deleteNode(node) {
-        setChosenNode(node);
-        deleteChosenNode();
+        if (await isUserHaveAccess(node))
+        {
+            setOpenDeleteModal(true);
+        } else {
+            messageApi.open({
+                type: 'error',
+                content: "У вас недостаточно прав для удаления данного элемента"
+            });
+        }
     }
 
     async function viewDirectoryContent(directory) {
@@ -313,7 +321,7 @@ function MainPageComponent() {
     async function isUserHaveAccess(node) {
         const response = await fetch(`https://localhost:7018/api/nodeaccess/check-access-edit/${node.id}`, {
             credentials: 'include'
-        });
+        })
         if (response.status == 200) {
             return true;
         } else if (response.status == 403) {
@@ -321,20 +329,45 @@ function MainPageComponent() {
         }
     }
 
+    async function accessManageNode(node) {
+        if (await isUserHaveAccess(node)) {
+            setIsAccessManageModalVisible(true);
+        } else {
+            messageApi.open({
+                type: 'error',
+                content: "У вас недостаточно прав для назначения прав доступа данному элементу"
+            });
+        }
+    }
+
     async function editNode(node) {
         if (node != undefined)
         {
             setChosenNode(node);
-            if (node.type == "Document") {
-                setIsDocumentEditFormVisible(true);
+            if (await isUserHaveAccess(node) == true) {
+                if (node.type == "Document") {
+                    setIsDocumentEditFormVisible(true);
+                } else {
+                    setIsDirectoryEditFormVisible(true);
+                }
             } else {
-                setIsDirectoryEditFormVisible(true);
+                messageApi.open({
+                    type: 'error',
+                    content: "У вас недостаточно прав для редактирования данного элемента"
+                });
             }
         } else {
-            if (chosenNode.type == "Document") {
-                setIsDocumentEditFormVisible(true);
+            if (await isUserHaveAccess(chosenNode) == true) {
+                if (chosenNode.type == "Document") {
+                    setIsDocumentEditFormVisible(true);
+                } else {
+                    setIsDirectoryEditFormVisible(true);
+                }
             } else {
-                setIsDirectoryEditFormVisible(true);
+                messageApi.open({
+                    type: 'error',
+                    content: "У вас недостаточно прав для редактирования данного элемента"
+                });
             }
         }
     }
@@ -454,15 +487,15 @@ function MainPageComponent() {
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? editNode(record) : setIsShowMessageErrorAccess(true)}}>Редактировать</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); editNode(record)}}>Редактировать</a>
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? setOpenDeleteModal(true) : setIsShowMessageErrorAccess(true)}}>Удалить</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); deleteNode(record)}}>Удалить</a>
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? setIsAccessManageModalVisible(true) : setIsShowMessageErrorAccess(true)}}>Управление доступом</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); accessManageNode(record)}}>Управление доступом</a>
         }
     ];
 
@@ -472,6 +505,7 @@ function MainPageComponent() {
 
     return (
         <>
+            {contextHolder}
             {isDirectoryCreateFormVisible && (
                 <div className='modal'>
                     <div className='modalContent'>
@@ -483,7 +517,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDirectoryEditFormVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && (
+            {isDirectoryEditFormVisible && Object.keys(chosenNode).length !== 0 && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -517,7 +551,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentEditFormVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && (
+            {isDocumentEditFormVisible && Object.keys(chosenNode).length !== 0 && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -629,7 +663,7 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                     <Popover content={<p style={{fontSize: '14px'}}>Удалить выбранный элемент</p>}>
-                        <button onClick={() => {Object.keys(chosenNode).length !== 0 && setOpenDeleteModal(true)}} className="btnWithIcon">
+                        <button onClick={() => {Object.keys(chosenNode).length !== 0 && deleteNode(chosenNode)}} className="btnWithIcon">
                             <DeleteFilled style={{fontSize: '30px'}}/>
                         </button>
                     </Popover>
@@ -639,7 +673,7 @@ function MainPageComponent() {
                         </button>
                     </Popover>
                     <Popover content={<p style={{fontSize: '14px'}}>Управление доступом</p>}>
-                        <button onClick={() => {Object.keys(chosenNode).length !== 0 && setIsAccessManageModalVisible(true)}} className="btnWithIcon">
+                        <button onClick={() => {Object.keys(chosenNode).length !== 0 && accessManageNode(chosenNode)}} className="btnWithIcon">
                             <LockFilled style={{fontSize: '30px'}}/>
                         </button>
                     </Popover>
