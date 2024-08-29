@@ -4,6 +4,7 @@ import { message, Button, List, Select, Modal, Input, Form } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import Cookie from 'js-cookie';
+import { isJwtExpired } from 'jwt-check-expiration';
 
 function UserList() {
     const [list, setList] = useState([]);
@@ -41,6 +42,7 @@ function UserList() {
         const response = await fetch(`https://localhost:7018/api/users/${item.id}`, {
             method: 'DELETE',
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
         });
         if (response.status == 200) {
             const newList = list.filter((itemList) => itemList.id !== item.id);
@@ -58,57 +60,66 @@ function UserList() {
     };
 
     async function handleOkChange() {
-        const response = await fetch('https://localhost:7018/api/users/password-change', {
-            method: 'PATCH',
-            headers: new Headers({ "Content-Type": "application/json" }),
-            body: JSON.stringify({
-                id: item.id,
-                password: document.querySelector('#newPassword').value,
-            })
-        });
-        if (response.status == 200) {
+        const password = document.querySelector('#newPassword').value;
+        if (password == "") {
             messageApi.open({
-                type: 'success',
-                content: 'Пароль изменен',
+                type: 'error',
+                content: 'Введите пароль',
             });
         }
-        else if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
+        else {
+            const response = await fetch('https://localhost:7018/api/users/password-change', {
+                method: 'PATCH',
+                headers: new Headers({ "Content-Type": "application/json" }),
+                credentials: 'include',
+                body: JSON.stringify({
+                    id: item.id,
+                    password: password,
+                })
+            });
+            if (response.status == 200) {
+                messageApi.open({
+                    type: 'success',
+                    content: 'Пароль изменен',
+                });
+            }
+            setIsModalOpenChangePassword(false);
         }
-        setIsModalOpenChangePassword(false);
     };
 
     async function handleOkCreate() {
         const name = document.querySelector('#Login').value;
         const password = document.querySelector('#Password').value;
         const role = valueRole;
-        const response = await fetch('https://localhost:7018/api/users', {
-            method: 'POST',
-            credentials: 'include',
-            headers: new Headers({ "Content-Type": "application/json" }),
-            body: JSON.stringify({
-                roleId: role,
-                login: name,
-                password: password,
-            })
-        });
-        if (response.status == 201) {
-            const json = await response.json();
-            setList([...list, json])
+        if ((password == "") || (name == "")) {
             messageApi.open({
-                type: 'success',
-                content: 'Пользователь добавлен',
+                type: 'error',
+                content: "Поля 'Логин' и 'Пароль' должны быть заполнены",
             });
-            
-            setIsModalOpenCreate(false);
+
         }
-        else if (response.status == 401) {
-            navigate('/login');
-            Cookie.remove('test')
+        else {
+            const response = await fetch('https://localhost:7018/api/users', {
+                method: 'POST',
+                credentials: 'include',
+                headers: new Headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({
+                    roleId: role,
+                    login: name,
+                    password: password,
+                })
+            });
+            if (response.status == 201) {
+                const json = await response.json();
+                setList([...list, json])
+                messageApi.open({
+                    type: 'success',
+                    content: 'Пользователь добавлен',
+                });
+
+                setIsModalOpenCreate(false);
+            }
         }
-        
-        
     }
 
     const handleCancel = () => {
@@ -127,6 +138,7 @@ function UserList() {
         const response = await fetch('https://localhost:7018/api/users/rolechange', {
             method: 'PATCH',
             headers: new Headers({ "Content-Type": "application/json" }),
+            credentials: 'include',
             body: JSON.stringify({
                 id: item.id,
                 roleId: item.roleId,
@@ -145,6 +157,7 @@ function UserList() {
     };
 
     async function getAllUsers() {
+        console.log('isExpired is:', isJwtExpired(Cookie.get('test')));
         const response = await fetch('https://localhost:7018/api/users/all', {
             credentials: 'include',
             method: 'GET',

@@ -20,7 +20,7 @@ namespace Document_Directory.Server.Function
             List<Nodes> nodes = new List<Nodes>();
             foreach (var nodeAccess in nodeAccesses)
             {
-                Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId);
+                Nodes node = _dbContext.Nodes.FirstOrDefault(n => n.Id == nodeAccess.NodeId && (n.ActivityEnd == null || n.ActivityEnd > utcNow || n.UserId == idUser));
                 if (node != null) nodes.Add(node);
             }
 
