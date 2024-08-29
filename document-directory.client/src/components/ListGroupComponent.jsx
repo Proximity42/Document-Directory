@@ -182,27 +182,36 @@ function ListGroupComponent() {
 
     async function handleOkRename(item) {
         setItem(item);
-        const newName = document.querySelector('#newName').value
-        const response = await fetch('https://localhost:7018/api/groups', {
-            method: 'PATCH',
-            headers: new Headers({ "Content-Type": "application/json" }),
-            body: JSON.stringify({
-                id: item.id,
-                name: newName,
-            })
-        })
-        if (response.status == 200) {
-            const index = listGroup.findIndex((el) => el.id == item.id);
-            const newList = listGroup.filter((itemList) => itemList.id !== item.id);
-            newList.splice(index, 0, new Object({ id: item.id, name: newName }))
-            const newListGroup = listGroup;
-            setListGroup(newList);
+        const newName = document.querySelector('#newName').value;
+        if (newName == '') {
             messageApi.open({
-                type: 'success',
-                content: 'Название группы изменено',
+                type: 'error',
+                content: 'Введите название',
             });
-            setIsShowModalRename(false);
         }
+        else {
+            const response = await fetch('https://localhost:7018/api/groups', {
+                method: 'PATCH',
+                headers: new Headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({
+                    id: item.id,
+                    name: newName,
+                })
+            })
+            if (response.status == 200) {
+                const index = listGroup.findIndex((el) => el.id == item.id);
+                const newList = listGroup.filter((itemList) => itemList.id !== item.id);
+                newList.splice(index, 0, new Object({ id: item.id, name: newName }))
+                const newListGroup = listGroup;
+                setListGroup(newList);
+                messageApi.open({
+                    type: 'success',
+                    content: 'Название группы изменено',
+                });
+                setIsShowModalRename(false);
+            }
+        }
+        
         
     }
 
@@ -227,24 +236,34 @@ function ListGroupComponent() {
     }
 
     async function handleOkCreate() {
-        const response = await fetch('https://localhost:7018/api/groups', {
-            method: 'POST',
-            headers: new Headers({ "Content-Type": "application/json" }),
-            body: JSON.stringify({
-                name: document.querySelector('#Name').value,
-                participants: targetKeysCreate,
-            })
-        })
-        if (response.status == 201) {
-            const json = await response.json()
-            setListGroup([...listGroup, json])
+        const name = document.querySelector('#Name').value;
+        if (name == '') {
             messageApi.open({
-                type: 'success',
-                content: 'Группа добавлена',
+                type: 'error',
+                content: 'Введите название',
             });
-            
-            setIsShowModalCreate(false)
         }
+        else {
+            const response = await fetch('https://localhost:7018/api/groups', {
+                method: 'POST',
+                headers: new Headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({
+                    name: name,
+                    participants: targetKeysCreate,
+                })
+            })
+            if (response.status == 201) {
+                const json = await response.json()
+                setListGroup([...listGroup, json])
+                messageApi.open({
+                    type: 'success',
+                    content: 'Группа добавлена',
+                });
+
+                setIsShowModalCreate(false)
+            }
+        }
+        
         
     }
     async function getListGroup() {
