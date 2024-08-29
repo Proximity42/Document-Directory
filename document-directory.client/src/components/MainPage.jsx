@@ -26,6 +26,7 @@ function MainPageComponent() {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [confirmLoadingDeleteModal, setConfirmLoadingDeleteModal] = useState(false);
     const [isAccessManageModalVisible, setIsAccessManageModalVisible] = useState(false);
+    const [isShowMessageErrorAccess, setIsShowMessageErrorAccess] = useState(false);
     const navigate = useNavigate();
 
 
@@ -273,6 +274,17 @@ function MainPageComponent() {
         
     }
 
+    async function isUserHaveAccess(node) {
+        const response = await fetch(`https://localhost:7018/api/nodeaccess/check-access-edit/${node.id}`, {
+            credentials: 'include'
+        });
+        if (response.status == 200) {
+            return true;
+        } else if (response.status == 401) {
+            return false;
+        }
+    }
+
     async function editNode(node) {
         if (node != undefined)
         {
@@ -396,15 +408,15 @@ function MainPageComponent() {
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => editNode(record)}>Редактировать</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? editNode(record) : setIsShowMessageErrorAccess(true)}}>Редактировать</a>
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => {setChosenNode(record); setOpenDeleteModal(true)}}>Удалить</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? setOpenDeleteModal(true) : setIsShowMessageErrorAccess(true)}}>Удалить</a>
         },
         {
             width: '10%',
-            render: (_, record) => <a onClick={() => {setChosenNode(record); setIsAccessManageModalVisible(true)}}>Управление доступом</a>
+            render: (_, record) => <a onClick={() => {setChosenNode(record); isUserHaveAccess(record) ? setIsAccessManageModalVisible(true) : setIsShowMessageErrorAccess(true)}}>Управление доступом</a>
         }
     ];
 
@@ -425,7 +437,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDirectoryEditFormVisible && Object.keys(chosenNode).length !== 0 && (
+            {isDirectoryEditFormVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -459,7 +471,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentEditFormVisible && Object.keys(chosenNode).length !== 0 && (
+            {isDocumentEditFormVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -486,7 +498,7 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isDocumentViewModalVisible && Object.keys(chosenNode).length !== 0 && (
+            {isDocumentViewModalVisible && Object.keys(chosenNode).length !== 0 (
                 <div className='modal'>
                     <div className='modalContent'>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -510,12 +522,12 @@ function MainPageComponent() {
                     </div>
                 </div>
             )}
-            {isAccessManageModalVisible && Object.keys(chosenNode).length !== 0 && <AccessManagePage 
-                setIsModalVisible={setIsAccessManageModalVisible} 
+            {isAccessManageModalVisible && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && <AccessManagePage 
+                setIsModalVisible={setIsAccessManageModalVisible}
                 chosenNode={chosenNode}
                 setChosenNode={setChosenNode}
             />}
-            {chosenNode && Object.keys(chosenNode).length !== 0 && <Modal 
+            {chosenNode && Object.keys(chosenNode).length !== 0 && isUserHaveAccess(chosenNode) && <Modal 
                 title={"Подтверждение удаления"}
                 open={openDeleteModal}
                 onOk={deleteChosenNode}

@@ -1,5 +1,7 @@
-﻿using Document_Directory.Server.Models;
+﻿using Document_Directory.Server.Function;
+using Document_Directory.Server.Models;
 using Document_Directory.Server.ModelsDB;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -70,6 +72,27 @@ namespace Document_Directory.Server.Controllers
             var response = this.Response;
             response.StatusCode = 200;
             await response.WriteAsJsonAsync(updatedNodeAccessList);
+        }
+
+        [Authorize]
+        [HttpGet("check-access-edit/{nodeId}")]
+        async public Task CheckAccessEdit(int nodeId)
+        {
+            int userId = Convert.ToInt32(this.HttpContext.User.FindFirst("Id").Value); ;
+            Nodes node = _dbContext.Nodes.Find(nodeId);
+            Users user = _dbContext.Users.Find(userId);
+
+            var response = this.Response;
+            if (node.UserId == userId || UserFunctions.GetRoleUser(user.Id, _dbContext) == "Администратор")
+            {
+                response.StatusCode = 200;
+                await response.WriteAsJsonAsync(true);
+            }
+            else
+            {
+                response.StatusCode = 401;
+                await response.WriteAsJsonAsync(false);
+            }
         }
     }
 }
